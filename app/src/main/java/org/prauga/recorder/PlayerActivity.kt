@@ -42,6 +42,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import java.text.DateFormat
 import java.text.DecimalFormat
 import kotlinx.coroutines.launch
+import org.prauga.recorder.audio.AudioEditor
 import org.prauga.recorder.audio.WaveformExtractor
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.playback.PlaybackService
@@ -137,6 +138,10 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
                     onSelectionChangedListener?.invoke(startMs, endMs)
                 }
             }
+
+        findViewById<Button>(R.id.trimButton).setOnClickListener { cut(AudioEditor.Mode.KEEP) }
+        findViewById<Button>(R.id.removeButton).setOnClickListener { cut(AudioEditor.Mode.REMOVE) }
+        onSelectionChangedListener = { _, _ -> updateSelectionText() }
 
         val uri = intent.data ?: intent.getStringExtra(EXTRA_URI)?.let(Uri::parse)
         if (uri == null) {
@@ -312,6 +317,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
                     )
                     bind(recording.copy(favourite = !recording.favourite))
                 }
+            R.id.action_edit -> setEditMode(!waveformView.selectionEnabled)
             R.id.action_share ->
                 startActivity(RecordIntentHelper.getShareIntent(recording.uri, recording.mimeType))
             R.id.action_rename ->
@@ -339,6 +345,57 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
             else -> return onExtraMenuItem(item) || super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun setEditMode(enabled: Boolean) {
+        waveformView.selectionEnabled = enabled
+        findViewById<View>(R.id.editBar).visibility = if (enabled) View.VISIBLE else View.GONE
+        if (enabled) updateSelectionText()
+    }
+
+    private fun updateSelectionText() {
+        findViewById<TextView>(R.id.selectionTextView).text =
+            getString(
+                R.string.edit_selection,
+                format(waveformView.selectionStartMs),
+                format(waveformView.selectionEndMs),
+            )
+    }
+
+    private fun cut(mode: AudioEditor.Mode) {
+        val recording = recording ?: return
+        val base = recording.title.substringBeforeLast('.')
+        RenameDialog.show(this, getString(R.string.edit_copy_name, base)) { name ->
+            val progress =
+                MaterialAlertDialogBuilder(this)
+                    .setMessage(R.string.edit_saving)
+                    .setCancelable(false)
+                    .show()
+            lifecycleScope.launch {
+                val uri =
+                    try {
+                        AudioEditor.cut(
+                            this@PlayerActivity,
+                            recording,
+                            waveformView.selectionStartMs,
+                            waveformView.selectionEndMs,
+                            mode,
+                            name,
+                        )
+                    } catch (e: Exception) {
+                        android.util.Log.e("PlayerActivity", "Edit failed", e)
+                        null
+                    }
+                progress.dismiss()
+                if (uri == null) {
+                    Toast.makeText(this@PlayerActivity, R.string.edit_failed, Toast.LENGTH_SHORT)
+                        .show()
+                } else {
+                    startActivity(intent(this@PlayerActivity, Uri.parse(uri)))
+                    finish()
+                }
+            }
+        }
     }
 
     /** Hook for menu items added by later features (edit, transcript export, clips). */
