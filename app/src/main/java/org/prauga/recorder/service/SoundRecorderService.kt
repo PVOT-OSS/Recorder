@@ -547,6 +547,11 @@ class SoundRecorderService : LifecycleService() {
     }
 
     private fun notifyStatus(newStatus: UiStatus) {
+        val recording = newStatus != UiStatus.READY
+        if (recording != isRecording) {
+            isRecording = recording
+            RecordTileService.refresh(this)
+        }
         notifyClients(MSG_UI_STATUS, newStatus)
     }
 
@@ -711,6 +716,10 @@ class SoundRecorderService : LifecycleService() {
 
     companion object {
         private const val TAG = "SoundRecorderService"
+
+        @Volatile
+        var isRecording = false
+            private set
 
         const val ACTION_START = "START"
         const val ACTION_STOP = "STOP"
