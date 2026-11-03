@@ -3,7 +3,8 @@
      SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
      SPDX-License-Identifier: Apache-2.0
 -->
-<resources>
+<!-- PVOT strings, outside LineageOS' translation import: English until translations are set up -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- Entry points -->
     <string name="shortcut_record">Start recording</string>
     <string name="tile_label">Record audio</string>
