@@ -47,6 +47,8 @@ object ClipExporter {
     private const val AUDIO_BITRATE = 96_000
     private const val AUDIO_RATE = 44100
     private const val TIMEOUT_US = 10_000L
+    private const val MAX_IN_FLIGHT = 1
+    private const val MAX_WAITS = 50
 
     private class Sample(val data: ByteArray, val ptsUs: Long, val flags: Int)
 
@@ -207,9 +209,10 @@ object ClipExporter {
         var written = 0L
         var rendered = 0
 
-        fun drain(endOfStream: Boolean) {
+        fun drain(endOfStream: Boolean, timeoutUs: Long = 0) {
             while (true) {
-                val index = codec.dequeueOutputBuffer(info, if (endOfStream) TIMEOUT_US else 0)
+                val index =
+                    codec.dequeueOutputBuffer(info, if (endOfStream) TIMEOUT_US else timeoutUs)
                 when {
                     index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                         videoTrack = muxer.addTrack(codec.outputFormat)
@@ -243,7 +246,12 @@ object ClipExporter {
                 renderer.draw(canvas, rendered.toFloat() / frames)
                 surface.unlockCanvasAndPost(canvas)
                 rendered++
-                drain(false)
+                // The input surface drops frames that arrive faster than the encoder takes them,
+                // so wait for this one to come out before drawing the next
+                var waits = 0
+                while (written < rendered - MAX_IN_FLIGHT && waits++ < MAX_WAITS) {
+                    drain(false, TIMEOUT_US)
+                }
                 onProgress(rendered.toFloat() / frames)
             }
             codec.signalEndOfInputStream()
