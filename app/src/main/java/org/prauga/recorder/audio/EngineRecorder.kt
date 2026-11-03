@@ -66,6 +66,9 @@ class EngineRecorder(
     val durationMs
         get() = capture?.durationMs ?: 0
 
+    val audioSessionId
+        get() = capture?.audioSessionId ?: 0
+
     override val mimeType = config.preset.mimeType
 
     override val fileExtension = config.preset.fileExtension

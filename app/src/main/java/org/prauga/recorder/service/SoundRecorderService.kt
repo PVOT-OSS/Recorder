@@ -17,6 +17,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.media.AudioRecordingConfiguration
 import android.net.Uri
 import android.os.BatteryManager
 import android.os.Build
@@ -107,6 +108,27 @@ class SoundRecorderService : LifecycleService() {
             }
         }
 
+    private var micSilenced = false
+
+    private val recordingCallback =
+        object : AudioManager.AudioRecordingCallback() {
+            override fun onRecordingConfigChanged(configs: List<AudioRecordingConfiguration>) {
+                val session = (recorder as? EngineRecorder)?.audioSessionId ?: return
+                val silenced =
+                    configs.firstOrNull { it.clientAudioSessionId == session }?.isClientSilenced
+                        ?: false
+                if (silenced != micSilenced) {
+                    micSilenced = silenced
+                    if (recorder != null) {
+                        notificationManager.notify(
+                            NOTIFICATION_ID,
+                            createRecordingNotification(elapsedTime),
+                        )
+                    }
+                }
+            }
+        }
+
     private val shutdownReceiver: BroadcastReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -131,6 +153,7 @@ class SoundRecorderService : LifecycleService() {
         )
 
         audioManager.addOnModeChangedListener(mainExecutor, modeListener)
+        audioManager.registerAudioRecordingCallback(recordingCallback, handler)
 
         if (notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL) == null) {
             createNotificationChannel()
@@ -140,6 +163,7 @@ class SoundRecorderService : LifecycleService() {
     override fun onDestroy() {
         unregisterReceiver(shutdownReceiver)
         audioManager.removeOnModeChangedListener(modeListener)
+        audioManager.unregisterAudioRecordingCallback(recordingCallback)
 
         stopTimers()
 
@@ -567,7 +591,10 @@ class SoundRecorderService : LifecycleService() {
         val nb =
             NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
                 .setOngoing(true)
-                .setContentText(getString(R.string.sound_notification_message, duration))
+                .setContentText(
+                    if (micSilenced) getString(R.string.mic_silenced)
+                    else getString(R.string.sound_notification_message, duration)
+                )
                 .setSmallIcon(R.drawable.ic_mic)
                 .setContentIntent(pi)
         if (isPaused) {
