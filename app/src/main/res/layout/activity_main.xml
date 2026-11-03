@@ -96,6 +96,7 @@
         android:id="@+id/openSoundListImageView"
         style="@style/AppTheme.ImageButton"
         android:contentDescription="@string/sound_last_title"
+        android:tooltipText="@string/sound_last_title"
         android:src="@drawable/ic_library_music"
         app:layout_constraintBottom_toBottomOf="@id/floatingActionButton"
         app:layout_constraintEnd_toEndOf="parent"
@@ -106,7 +107,8 @@
     <ImageView
         android:id="@+id/settingsImageView"
         style="@style/AppTheme.ImageButton"
-        android:contentDescription="@string/sound_last_title"
+        android:contentDescription="@string/settings_title"
+        android:tooltipText="@string/settings_title"
         android:src="@drawable/ic_settings"
         app:layout_constraintBottom_toBottomOf="@id/floatingActionButton"
         app:layout_constraintEnd_toStartOf="@+id/openSoundListImageView"

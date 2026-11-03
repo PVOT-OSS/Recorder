@@ -271,11 +271,13 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
             liveTranscriptTextView.text = null
             titleTextView.text = getString(R.string.main_sound_action)
             floatingActionButton.setImageResource(R.drawable.ic_mic)
+            floatingActionButton.contentDescription = getString(R.string.main_sound_action)
             elapsedTimeText.isVisible = false
             recordingWaveFormView.isVisible = false
             pauseResumeImageView.isVisible = false
         } else {
             floatingActionButton.setImageResource(R.drawable.ic_stop)
+            floatingActionButton.contentDescription = getString(R.string.stop)
             elapsedTimeText.isVisible = true
             recordingWaveFormView.isVisible = true
             recordingWaveFormView.setAmplitude(0)

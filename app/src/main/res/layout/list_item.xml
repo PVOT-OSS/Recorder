@@ -43,6 +43,7 @@
         android:id="@+id/menuImageView"
         style="@style/AppTheme.ImageButton"
         android:contentDescription="@string/list_item_menu"
+        android:tooltipText="@string/list_item_menu"
         android:src="@drawable/ic_menu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
