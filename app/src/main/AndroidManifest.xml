@@ -77,8 +77,17 @@
 
         <activity
             android:name=".SettingsActivity"
+            android:exported="true"
             android:label="@string/settings_title"
-            android:parentActivityName=".RecorderActivity" />
+            android:parentActivityName=".RecorderActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE_FOR_PERIOD" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <!-- Sound recorder -->
         <service
