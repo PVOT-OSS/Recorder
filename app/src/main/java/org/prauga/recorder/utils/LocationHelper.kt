@@ -45,6 +45,33 @@ class LocationHelper(private val context: Context) {
                     } ?: address.locality ?: address.countryName
                 }
 
+    /** Last known location if tagging is enabled and permitted. */
+    val currentLocation: Location?
+        get() = lastGoodLocation
+
+    /** A readable place name; coordinates when no geocoder is available (e.g. no GMS). */
+    fun describe(location: Location): String {
+        val name =
+            if (Geocoder.isPresent()) {
+                try {
+                    Geocoder(context)
+                        .getFromLocation(location.latitude, location.longitude, 1)
+                        ?.firstOrNull()
+                        ?.let { it.locality ?: it.subAdminArea ?: it.adminArea ?: it.countryName }
+                } catch (e: IOException) {
+                    Log.w(TAG, "Geocoding failed", e)
+                    null
+                }
+            } else null
+        return name
+            ?: String.format(
+                java.util.Locale.ROOT,
+                "%.4f, %.4f",
+                location.latitude,
+                location.longitude,
+            )
+    }
+
     private val lastGoodLocation: Location?
         get() {
             if (!preferences.tagWithLocation) {

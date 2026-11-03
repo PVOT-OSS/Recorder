@@ -47,6 +47,7 @@ import org.prauga.recorder.RecorderActivity
 import org.prauga.recorder.audio.EngineRecorder
 import org.prauga.recorder.models.UiStatus
 import org.prauga.recorder.repository.RecordingsRepository
+import org.prauga.recorder.utils.LocationHelper
 import org.prauga.recorder.utils.PreferencesManager
 import org.prauga.recorder.utils.RecordIntentHelper
 
@@ -77,6 +78,8 @@ class SoundRecorderService : LifecycleService() {
     private val messenger = Messenger(handler)
     private var recorder: SoundRecording? = null
     private var recordFile: File? = null
+    private var recordLocation: android.location.Location? = null
+    private val locationHelper by lazy { LocationHelper(this) }
     private var amplitudeTimer: Timer? = null
     private var elapsedTimeTimer: Timer? = null
     private var isPaused = false
@@ -167,6 +170,7 @@ class SoundRecorderService : LifecycleService() {
                     }
 
             this.recordFile = file
+            recordLocation = locationHelper.currentLocation
 
             isPaused = false
             elapsedTime = 0
@@ -222,8 +226,10 @@ class SoundRecorderService : LifecycleService() {
                             recorder.mimeType,
                             preferencesManager.qualityPreset.key,
                         )
-                        ?.also { uri -> onRecordCompleted(uri) }
-                        ?: run { Log.e(TAG, "Failed to save recording") }
+                        ?.also { uri ->
+                            saveLocation(uri, it.name)
+                            onRecordCompleted(uri)
+                        } ?: run { Log.e(TAG, "Failed to save recording") }
                 }
 
                 true
@@ -232,6 +238,21 @@ class SoundRecorderService : LifecycleService() {
                 onRecordFailed()
                 false
             }
+    }
+
+    private fun saveLocation(uri: String, title: String) {
+        val location = recordLocation ?: return
+        recordLocation = null
+        org.prauga.recorder.RecorderApplication.appScope.launch {
+            RecordingsRepository.setLocation(
+                applicationContext,
+                android.content.ContentUris.parseId(Uri.parse(uri)),
+                location.latitude,
+                location.longitude,
+                locationHelper.describe(location),
+                title,
+            )
+        }
     }
 
     private fun pauseRecording(): Boolean {

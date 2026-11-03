@@ -99,6 +99,24 @@ object RecordingsRepository {
             }
         }
 
+    suspend fun setLocation(
+        context: Context,
+        id: Long,
+        latitude: Double,
+        longitude: Double,
+        name: String,
+        title: String,
+    ) =
+        withContext(Dispatchers.IO) {
+            RecordingsDatabase.get(context).let {
+                it.upsert(
+                    it.metadata(id)
+                        .copy(latitude = latitude, longitude = longitude, locationName = name)
+                )
+                it.reindex(id, title)
+            }
+        }
+
     fun knownLabels(context: Context): List<String> =
         RecordingsDatabase.get(context).metadata().values.flatMap { it.labels }.distinct()
 
