@@ -4,6 +4,9 @@
      SPDX-License-Identifier: Apache-2.0
 -->
 <resources>
+    <!-- Rename -->
+    <string name="rename_suggest">Suggest</string>
+
     <!-- Settings -->
     <string name="settings_category_recording">Recording</string>
     <string name="settings_category_appearance">Appearance</string>

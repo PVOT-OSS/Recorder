@@ -11,13 +11,9 @@ import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
@@ -37,11 +33,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.prauga.recorder.ext.scheduleShowSoftInput
 import org.prauga.recorder.list.RecordingItemCallbacks
 import org.prauga.recorder.list.RecordingItemDetailsLookup
 import org.prauga.recorder.list.RecordingsAdapter
 import org.prauga.recorder.models.Recording
+import org.prauga.recorder.ui.RenameDialog
 import org.prauga.recorder.utils.RecordIntentHelper
 import org.prauga.recorder.viewmodels.RecordingsViewModel
 
@@ -57,9 +53,6 @@ class ListActivity : AppCompatActivity() {
     }
     private val listRecyclerView by lazy { findViewById<RecyclerView>(R.id.listRecyclerView) }
     private val toolbar by lazy { findViewById<Toolbar>(R.id.toolbar) }
-
-    // System services
-    private val inputMethodManager by lazy { getSystemService(InputMethodManager::class.java) }
 
     // Adapters
     private val recordingItemCallbacks =
@@ -248,51 +241,9 @@ class ListActivity : AppCompatActivity() {
     }
 
     fun onRename(recording: Recording) {
-        lateinit var alertDialog: AlertDialog
-        lateinit var editText: EditText
-
-        val onConfirm = {
-            editText.text
-                ?.takeIf { it.isNotEmpty() }
-                ?.let { editable ->
-                    lifecycleScope.launch { model.renameRecording(recording, editable.toString()) }
-
-                    true
-                } ?: false
+        RenameDialog.show(this, recording.title) { name ->
+            lifecycleScope.launch { model.renameRecording(recording, name) }
         }
-
-        val view = layoutInflater.inflate(R.layout.dialog_content_rename, null, false)
-        editText =
-            view.findViewById<EditText>(R.id.nameEditText).apply {
-                setText(recording.title)
-                setSelection(0, recording.title.length)
-                setOnEditorActionListener { _, actionId, _ ->
-                    when (actionId) {
-                        EditorInfo.IME_ACTION_UNSPECIFIED,
-                        EditorInfo.IME_ACTION_DONE -> {
-                            onConfirm().also {
-                                if (it) {
-                                    alertDialog.dismiss()
-                                }
-                            }
-                        }
-
-                        else -> false
-                    }
-                }
-            }
-
-        alertDialog =
-            MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.list_edit_title)
-                .setView(view)
-                .setPositiveButton(R.string.list_edit_confirm) { _, _ -> onConfirm() }
-                .setNegativeButton(R.string.cancel, null)
-                .show()
-                .also {
-                    editText.requestFocus()
-                    inputMethodManager.scheduleShowSoftInput(editText, 0)
-                }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
