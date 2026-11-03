@@ -24,6 +24,13 @@
         app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_search_transcript"
+        android:icon="@drawable/ic_search"
+        android:title="@string/transcript_search" />
+    <item
+        android:id="@+id/action_transcribe"
+        android:title="@string/transcribe" />
+    <item
         android:id="@+id/action_labels"
         android:title="@string/labels" />
     <item

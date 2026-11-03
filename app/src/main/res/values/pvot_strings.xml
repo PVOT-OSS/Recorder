@@ -36,6 +36,18 @@
     <string name="transcribe">Transcribe</string>
     <string name="transcribe_no_model">Download a speech model first</string>
 
+    <!-- Transcript -->
+    <string name="transcript_none">No transcript yet</string>
+    <string name="transcript_no_speech">No speech was recognised</string>
+    <string name="transcript_working">Transcribing… %1$d%%</string>
+    <string name="transcript_edit">Edit text</string>
+    <string name="transcript_search">Search in transcript</string>
+    <string name="transcript_search_hint">Find words</string>
+    <string name="transcript_previous">Previous match</string>
+    <string name="transcript_next">Next match</string>
+    <string name="transcript_matches">%1$d/%2$d</string>
+    <string name="transcript_speaker">Speaker %1$d</string>
+
     <!-- Player -->
     <string name="player_waveform">Playback position</string>
     <string name="player_speed">Playback speed</string>

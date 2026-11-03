@@ -50,6 +50,7 @@ import org.prauga.recorder.repository.RecordingsRepository
 import org.prauga.recorder.ui.LabelsDialog
 import org.prauga.recorder.ui.PlaybackWaveformView
 import org.prauga.recorder.ui.RenameDialog
+import org.prauga.recorder.ui.TranscriptPane
 import org.prauga.recorder.utils.PreferencesManager
 import org.prauga.recorder.utils.RecordIntentHelper
 import org.prauga.recorder.viewmodels.RecordingsViewModel
@@ -163,11 +164,14 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
                 recording.duration,
             )
             connect(recording)
+            transcriptPane.bind(recording)
             onRecordingLoaded?.invoke(recording)
         }
     }
 
     var onRecordingLoaded: ((Recording) -> Unit)? = null
+
+    val transcriptPane by lazy { TranscriptPane(this, findViewById(R.id.detailContainer)) }
     var onSelectionChangedListener: ((Long, Long) -> Unit)? = null
 
     private fun bind(recording: Recording) {
@@ -266,6 +270,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
         val position = controller.currentPosition
         waveformView.positionMs = position
         positionTextView.text = format(position)
+        transcriptPane.onPosition(position)
         onPositionChanged?.invoke(position)
     }
 
@@ -307,6 +312,9 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val favourite = recording?.favourite == true
+        val hasTranscript = transcriptPane.hasTranscript
+        menu.findItem(R.id.action_search_transcript)?.isVisible = hasTranscript
+        menu.findItem(R.id.action_transcribe)?.isVisible = recording != null
         menu.findItem(R.id.action_favourite)?.apply {
             setIcon(if (favourite) R.drawable.ic_star else R.drawable.ic_star_border)
             setTitle(if (favourite) R.string.unfavourite else R.string.favourite)
@@ -340,6 +348,8 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
                         }
                     }
                 }
+            R.id.action_transcribe -> transcriptPane.transcribe()
+            R.id.action_search_transcript -> transcriptPane.showSearch(true)
             R.id.action_edit -> setEditMode(!waveformView.selectionEnabled)
             R.id.action_share ->
                 startActivity(RecordIntentHelper.getShareIntent(recording.uri, recording.mimeType))
