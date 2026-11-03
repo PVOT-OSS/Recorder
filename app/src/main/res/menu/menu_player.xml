@@ -24,6 +24,10 @@
         app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_clip"
+        android:icon="@drawable/ic_movie"
+        android:title="@string/clip_create" />
+    <item
         android:id="@+id/action_search_transcript"
         android:icon="@drawable/ic_search"
         android:title="@string/transcript_search" />

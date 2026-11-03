@@ -114,6 +114,17 @@
     <string name="labels_new">New label</string>
     <string name="labels_save">Save</string>
 
+    <!-- Video clips -->
+    <string name="clip_create">Create video clip</string>
+    <string name="clip_shape">Clip shape</string>
+    <string name="clip_portrait">Portrait</string>
+    <string name="clip_landscape">Landscape</string>
+    <string name="clip_square">Square</string>
+    <string name="clip_dark">Dark background</string>
+    <string name="clip_rendering">Creating clip… %1$d%%</string>
+    <string name="clip_failed">Couldn\'t create the clip</string>
+    <string name="clip_range_hint">Uses the selection in edit mode, otherwise up to a minute from the current position</string>
+
     <!-- Rename -->
     <string name="rename_suggest">Suggest</string>
 

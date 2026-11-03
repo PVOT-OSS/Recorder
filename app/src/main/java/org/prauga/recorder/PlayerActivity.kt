@@ -44,6 +44,7 @@ import java.text.DecimalFormat
 import kotlinx.coroutines.launch
 import org.prauga.recorder.audio.AudioEditor
 import org.prauga.recorder.audio.WaveformExtractor
+import org.prauga.recorder.clip.ClipExporter
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.playback.PlaybackService
 import org.prauga.recorder.repository.RecordingsRepository
@@ -354,6 +355,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
             R.id.action_transcribe -> transcriptPane.transcribe()
             R.id.action_search_transcript -> transcriptPane.showSearch(true)
             R.id.action_export_transcript -> exportTranscript(recording)
+            R.id.action_clip -> createClip(recording)
             R.id.action_edit -> setEditMode(!waveformView.selectionEnabled)
             R.id.action_share ->
                 startActivity(RecordIntentHelper.getShareIntent(recording.uri, recording.mimeType))
@@ -386,6 +388,101 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
             else -> return onExtraMenuItem(item) || super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun createClip(recording: Recording) {
+        val shapes = ClipExporter.Shape.entries
+        val labels =
+            arrayOf(
+                getString(R.string.clip_portrait),
+                getString(R.string.clip_landscape),
+                getString(R.string.clip_square),
+            )
+        var shape = 0
+        val dark = booleanArrayOf(true)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.clip_shape)
+            .setSingleChoiceItems(labels, 0) { _, which -> shape = which }
+            .setPositiveButton(R.string.clip_create) { _, _ ->
+                renderClip(recording, shapes[shape], dark[0])
+            }
+            .setNeutralButton(R.string.clip_dark, null)
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+            .also { dialog ->
+                val button = dialog.getButton(android.app.AlertDialog.BUTTON_NEUTRAL)
+                fun label() {
+                    button.alpha = if (dark[0]) 1f else 0.5f
+                }
+                label()
+                button.setOnClickListener {
+                    dark[0] = !dark[0]
+                    label()
+                }
+            }
+    }
+
+    private fun renderClip(recording: Recording, shape: ClipExporter.Shape, dark: Boolean) {
+        val (start, end) =
+            if (waveformView.selectionEnabled) {
+                waveformView.selectionStartMs to waveformView.selectionEndMs
+            } else {
+                val from =
+                    (controller?.currentPosition ?: 0L).coerceAtMost(
+                        (recording.duration - 1000).coerceAtLeast(0)
+                    )
+                from to minOf(recording.duration, from + ClipExporter.MAX_LENGTH_MS)
+            }
+        val progress =
+            MaterialAlertDialogBuilder(this)
+                .setMessage(getString(R.string.clip_rendering, 0))
+                .setCancelable(false)
+                .show()
+        lifecycleScope.launch {
+            try {
+                val waveform =
+                    WaveformExtractor.load(this@PlayerActivity, recording.id, recording.uri)
+                val file =
+                    ClipExporter.export(
+                        this@PlayerActivity,
+                        recording,
+                        waveform,
+                        start,
+                        end,
+                        transcriptPane.transcript,
+                        transcriptPane::speakerName,
+                        shape,
+                        dark,
+                    ) { fraction ->
+                        runOnUiThread {
+                            progress.setMessage(
+                                getString(R.string.clip_rendering, (fraction * 100).toInt())
+                            )
+                        }
+                    }
+                val uri =
+                    androidx.core.content.FileProvider.getUriForFile(
+                        this@PlayerActivity,
+                        "$packageName.exports",
+                        file,
+                    )
+                startActivity(
+                    Intent.createChooser(
+                        Intent(Intent.ACTION_SEND)
+                            .setType("video/mp4")
+                            .putExtra(Intent.EXTRA_STREAM, uri)
+                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            .also { it.clipData = android.content.ClipData.newRawUri(null, uri) },
+                        null,
+                    )
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("PlayerActivity", "Clip failed", e)
+                Toast.makeText(this@PlayerActivity, R.string.clip_failed, Toast.LENGTH_SHORT).show()
+            } finally {
+                progress.dismiss()
+            }
+        }
     }
 
     private fun exportTranscript(recording: Recording) {
