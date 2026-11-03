@@ -15,6 +15,7 @@ import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import org.prauga.recorder.R
+import org.prauga.recorder.RecordActionActivity
 import org.prauga.recorder.RecorderActivity
 
 class RecordTileService : TileService() {
@@ -38,7 +39,7 @@ class RecordTileService : TileService() {
     override fun onClick() {
         super.onClick()
         val intent =
-            Intent(this, RecorderActivity::class.java)
+            Intent(this, RecordActionActivity::class.java)
                 .setAction(RecorderActivity.ACTION_TOGGLE_RECORDING)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {

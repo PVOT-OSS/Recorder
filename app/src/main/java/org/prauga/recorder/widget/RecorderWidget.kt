@@ -14,6 +14,7 @@ import android.content.Intent
 import android.widget.RemoteViews
 import org.prauga.recorder.ListActivity
 import org.prauga.recorder.R
+import org.prauga.recorder.RecordActionActivity
 import org.prauga.recorder.RecorderActivity
 import org.prauga.recorder.service.SoundRecorderService
 
@@ -39,7 +40,7 @@ class RecorderWidget : AppWidgetProvider() {
                     PendingIntent.getActivity(
                         context,
                         0,
-                        Intent(context, RecorderActivity::class.java)
+                        Intent(context, RecordActionActivity::class.java)
                             .setAction(RecorderActivity.ACTION_TOGGLE_RECORDING)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
