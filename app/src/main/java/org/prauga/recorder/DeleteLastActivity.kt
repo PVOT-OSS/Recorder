@@ -34,7 +34,7 @@ class DeleteLastActivity : ComponentActivity() {
 
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_title)
-            .setMessage(getString(R.string.delete_recording_message))
+            .setMessage(getString(R.string.trash_move_message))
             .setPositiveButton(R.string.delete) { d: DialogInterface, _: Int ->
                 lifecycleScope.launch {
                     model.deleteRecordings(uri)

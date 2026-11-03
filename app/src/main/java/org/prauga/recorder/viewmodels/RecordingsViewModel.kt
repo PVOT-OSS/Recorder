@@ -80,7 +80,30 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
 
     val inSelectionMode = MutableLiveData(false)
 
-    suspend fun deleteRecordings(vararg uris: Uri) {
+    /** Moves to the trash; MediaStore deletes trashed items for good after 30 days. */
+    suspend fun deleteRecordings(vararg uris: Uri) = setTrashed(true, *uris)
+
+    suspend fun restoreRecordings(vararg uris: Uri) = setTrashed(false, *uris)
+
+    private suspend fun setTrashed(trashed: Boolean, vararg uris: Uri) {
+        withContext(Dispatchers.IO) {
+            val values =
+                ContentValues().apply {
+                    put(MediaStore.MediaColumns.IS_TRASHED, if (trashed) 1 else 0)
+                }
+            for (uri in uris) {
+                try {
+                    contentResolver.update(uri, values, null, null)
+                } catch (e: SecurityException) {
+                    Log.e(LOG_TAG, "Failed to (un)trash recording", e)
+                }
+            }
+
+            Utils.cancelShareNotification(applicationContext)
+        }
+    }
+
+    suspend fun deleteForever(vararg uris: Uri) {
         withContext(Dispatchers.IO) {
             for (uri in uris) {
                 try {
@@ -89,10 +112,13 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
                     Log.e(LOG_TAG, "Failed to delete recording", e)
                 }
             }
-
-            Utils.cancelShareNotification(applicationContext)
         }
     }
+
+    val trashed: StateFlow<List<Recording>> =
+        RecordingsRepository.trashed(applicationContext)
+            .flowOn(Dispatchers.IO)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), listOf())
 
     suspend fun deleteRecordings(vararg recordings: Recording) =
         deleteRecordings(*recordings.map { it.uri }.toTypedArray())

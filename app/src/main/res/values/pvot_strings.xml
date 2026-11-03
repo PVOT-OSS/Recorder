@@ -31,6 +31,19 @@
     <string name="filter_favourites">Favourites</string>
     <string name="list_no_results">No recordings match</string>
 
+    <!-- Trash -->
+    <string name="trash_title">Trash</string>
+    <string name="trash_empty">Trash is empty</string>
+    <string name="trash_empty_action">Empty trash</string>
+    <string name="trash_summary">Deleted recordings are removed for good after 30 days</string>
+    <string name="trash_move_message">The recording moves to the trash. You can restore it for 30 days</string>
+    <string name="trash_move_selected_message">The selected recordings move to the trash. You can restore them for 30 days</string>
+    <string name="trash_move_all_message">All recordings move to the trash. You can restore them for 30 days</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_delete_forever">Delete forever</string>
+    <string name="trash_delete_forever_message">This recording will be deleted permanently</string>
+    <string name="trash_empty_message">All recordings in the trash will be deleted permanently</string>
+
     <!-- Labels -->
     <string name="labels">Labels</string>
     <string name="labels_title">Labels</string>

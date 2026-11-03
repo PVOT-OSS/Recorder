@@ -18,7 +18,8 @@ import org.prauga.recorder.models.Recording
 import org.prauga.recorder.query.Query
 import org.prauga.recorder.query.eq
 
-class RecordingsFlow(val context: Context) : QueryFlow<Recording>() {
+class RecordingsFlow(val context: Context, private val trashed: Boolean = false) :
+    QueryFlow<Recording>() {
     override fun flowCursor(): Flow<Cursor?> {
         val uri = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         val selection = MediaStore.Audio.Media.OWNER_PACKAGE_NAME eq Query.ARG
@@ -32,6 +33,8 @@ class RecordingsFlow(val context: Context) : QueryFlow<Recording>() {
                 ContentResolver.QUERY_ARG_SQL_SELECTION to selection.build(),
                 ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS to selectionArgs,
                 ContentResolver.QUERY_ARG_SQL_SORT_ORDER to sortOrder,
+                MediaStore.QUERY_ARG_MATCH_TRASHED to
+                    if (trashed) MediaStore.MATCH_ONLY else MediaStore.MATCH_EXCLUDE,
             ),
         )
     }

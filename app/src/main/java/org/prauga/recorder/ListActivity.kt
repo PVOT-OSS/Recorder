@@ -6,6 +6,7 @@
 package org.prauga.recorder
 
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.view.ActionMode
 import android.view.Menu
@@ -144,7 +145,7 @@ class ListActivity : AppCompatActivity() {
                             R.id.deleteForever -> {
                                 MaterialAlertDialogBuilder(this@ListActivity)
                                     .setTitle(R.string.delete_selected_title)
-                                    .setMessage(getString(R.string.delete_selected_message))
+                                    .setMessage(getString(R.string.trash_move_selected_message))
                                     .setPositiveButton(R.string.delete) {
                                         _: DialogInterface?,
                                         _: Int ->
@@ -296,7 +297,7 @@ class ListActivity : AppCompatActivity() {
     fun onDelete(recording: Recording) {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_title)
-            .setMessage(R.string.delete_recording_message)
+            .setMessage(R.string.trash_move_message)
             .setPositiveButton(R.string.delete) { _: DialogInterface?, _: Int ->
                 lifecycleScope.launch { model.deleteRecordings(recording) }
             }
@@ -344,6 +345,11 @@ class ListActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) =
         when (item.itemId) {
+            R.id.action_trash -> {
+                startActivity(Intent(this, TrashActivity::class.java))
+                true
+            }
+
             R.id.action_delete_all -> {
                 promptDeleteAllRecordings()
                 true
@@ -391,7 +397,7 @@ class ListActivity : AppCompatActivity() {
 
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_all_title)
-            .setMessage(getString(R.string.delete_all_message))
+            .setMessage(getString(R.string.trash_move_all_message))
             .setPositiveButton(R.string.delete) { _: DialogInterface?, _: Int ->
                 lifecycleScope.launch {
                     model.deleteRecordings(*recordingsAdapter.currentList.toTypedArray())

@@ -354,7 +354,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
             R.id.action_delete ->
                 MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.delete_title)
-                    .setMessage(R.string.delete_recording_message)
+                    .setMessage(R.string.trash_move_message)
                     .setPositiveButton(R.string.delete) { _, _ ->
                         lifecycleScope.launch {
                             controller?.stop()

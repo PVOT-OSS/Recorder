@@ -55,6 +55,11 @@
             android:parentActivityName=".RecorderActivity" />
 
         <activity
+            android:name=".TrashActivity"
+            android:label="@string/trash_title"
+            android:parentActivityName=".ListActivity" />
+
+        <activity
             android:name=".PlayerActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".ListActivity" />

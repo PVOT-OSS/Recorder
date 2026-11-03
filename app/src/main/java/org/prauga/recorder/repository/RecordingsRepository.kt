@@ -5,6 +5,7 @@
 
 package org.prauga.recorder.repository
 
+import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
@@ -12,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
+import androidx.core.os.bundleOf
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -38,7 +40,7 @@ object RecordingsRepository {
     fun recordings(context: Context): Flow<List<Recording>> {
         val db = RecordingsDatabase.get(context)
         return RecordingsFlow(context).flowData().combine(db.changes) { list, _ ->
-            sync(db, list)
+            sync(context, db, list)
             val metadata = db.metadata()
             list.map { recording ->
                 metadata[recording.id]?.let {
@@ -99,8 +101,27 @@ object RecordingsRepository {
     fun knownLabels(context: Context): List<String> =
         RecordingsDatabase.get(context).metadata().values.flatMap { it.labels }.distinct()
 
-    private fun sync(db: RecordingsDatabase, list: List<Recording>) {
-        db.retainOnly(list.map { it.id }.toSet())
+    fun trashed(context: Context) = RecordingsFlow(context, trashed = true).flowData()
+
+    private fun trashedIds(context: Context): Set<Long> =
+        context.contentResolver
+            .query(
+                MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL),
+                arrayOf(MediaStore.Audio.Media._ID),
+                bundleOf(
+                    ContentResolver.QUERY_ARG_SQL_SELECTION to
+                        "${MediaStore.Audio.Media.OWNER_PACKAGE_NAME} = ?",
+                    ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS to arrayOf(context.packageName),
+                    MediaStore.QUERY_ARG_MATCH_TRASHED to MediaStore.MATCH_ONLY,
+                ),
+                null,
+            )
+            ?.use { c -> buildSet { while (c.moveToNext()) add(c.getLong(0)) } } ?: emptySet()
+
+    private fun sync(context: Context, db: RecordingsDatabase, list: List<Recording>) {
+        val keep = list.map { it.id }.toSet() + trashedIds(context)
+        (db.metadata().keys + db.indexedIds() - keep).forEach { Waveforms.delete(context, it) }
+        db.retainOnly(keep)
         val indexed = db.indexedIds()
         for (recording in list) {
             if (recording.id !in indexed) {
