@@ -20,6 +20,7 @@ object RenameDialog {
         activity: Activity,
         title: String,
         suggestions: List<String> = emptyList(),
+        dialogTitle: Int = R.string.list_edit_title,
         onRename: (String) -> Unit,
     ) {
         lateinit var alertDialog: AlertDialog
@@ -57,7 +58,7 @@ object RenameDialog {
 
         val builder =
             MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.list_edit_title)
+                .setTitle(dialogTitle)
                 .setView(view)
                 .setPositiveButton(R.string.list_edit_confirm) { _, _ -> onConfirm() }
                 .setNegativeButton(R.string.cancel, null)

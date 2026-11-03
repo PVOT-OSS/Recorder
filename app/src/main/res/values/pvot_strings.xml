@@ -47,6 +47,7 @@
     <string name="transcript_next">Next match</string>
     <string name="transcript_matches">%1$d/%2$d</string>
     <string name="transcript_speaker">Speaker %1$d</string>
+    <string name="transcript_rename_speaker">Rename speaker</string>
     <string name="transcript_export">Share transcript</string>
     <string name="transcript_export_text">Text</string>
     <string name="transcript_export_srt">Subtitles (SRT)</string>

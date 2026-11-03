@@ -258,7 +258,11 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
 
     private fun renameSpeaker(speaker: Int) {
         val recording = recording ?: return
-        RenameDialog.show(activity, speakerName(speaker).orEmpty()) { name ->
+        RenameDialog.show(
+            activity,
+            speakerName(speaker).orEmpty(),
+            dialogTitle = R.string.transcript_rename_speaker,
+        ) { name ->
             activity.lifecycleScope.launch(Dispatchers.IO) {
                 db.renameSpeaker(recording.id, speaker, name)
             }
