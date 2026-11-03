@@ -6,8 +6,10 @@
 package org.prauga.recorder.playback
 
 import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -55,6 +57,8 @@ class PlaybackService : MediaSessionService() {
         super.onDestroy()
     }
 
+    // Custom session commands and SessionResult codes are still marked unstable in Media3
+    @OptIn(UnstableApi::class)
     private class Callback(private val player: ExoPlayer) : MediaSession.Callback {
         override fun onConnect(
             session: MediaSession,
