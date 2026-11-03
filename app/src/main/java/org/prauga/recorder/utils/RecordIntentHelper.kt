@@ -5,6 +5,7 @@
 
 package org.prauga.recorder.utils
 
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -16,6 +17,8 @@ object RecordIntentHelper {
         val intent = Intent(Intent.ACTION_SEND)
         intent.setType(mimeType)
         intent.putExtra(Intent.EXTRA_STREAM, uri)
+        uri?.let { intent.clipData = ClipData.newRawUri(null, it) }
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         val chooserIntent = Intent.createChooser(intent, null)
         chooserIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
         return chooserIntent
@@ -24,7 +27,14 @@ object RecordIntentHelper {
     fun getShareIntents(uris: List<Uri>, mimeType: String?): Intent {
         val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
         intent.setType(mimeType)
-        intent.putExtras(bundleOf(Intent.EXTRA_STREAM to uris))
+        intent.putExtras(bundleOf(Intent.EXTRA_STREAM to ArrayList(uris)))
+        uris.firstOrNull()?.let { first ->
+            intent.clipData =
+                ClipData.newRawUri(null, first).apply {
+                    uris.drop(1).forEach { addItem(ClipData.Item(it)) }
+                }
+        }
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         val chooserIntent = Intent.createChooser(intent, null)
         chooserIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
         return chooserIntent
