@@ -44,6 +44,12 @@ android {
 
     buildFeatures { resValues = true }
 
+    lint {
+        // Locales come from LineageOS' translation import and are often partial; missing
+        // strings fall back to English, so report them without failing the build
+        warning += "MissingTranslation"
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
