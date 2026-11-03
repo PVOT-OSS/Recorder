@@ -4,13 +4,10 @@
  */
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.lineageos.generatebp.GenerateBpPluginExtension
-import org.lineageos.generatebp.models.Module
 
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("org.lineageos.generatebp")
 }
 
 android {
@@ -38,10 +35,7 @@ android {
                 )
             )
         }
-        getByName("debug") {
-            // Append .dev to package name so we won't conflict with AOSP build.
-            applicationIdSuffix = ".dev"
-        }
+        getByName("debug") { applicationIdSuffix = ".dev" }
     }
 
     compileOptions {
@@ -71,19 +65,4 @@ dependencies {
     // Recyclerview
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.recyclerview:recyclerview-selection:1.1.0")
-}
-
-configure<GenerateBpPluginExtension> {
-    targetSdk.set(android.defaultConfig.targetSdk!!)
-    minSdk.set(android.defaultConfig.minSdk!!)
-    availableInAOSP.set { module: Module ->
-        when {
-            module.group.startsWith("androidx") -> true
-            module.group.startsWith("org.jetbrains") -> true
-            module.group == "com.google.android.material" -> true
-            module.group == "com.google.errorprone" -> true
-            module.group == "com.google.guava" -> true
-            else -> false
-        }
-    }
 }

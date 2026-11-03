@@ -7,7 +7,6 @@
 plugins {
     id("com.android.application") version "8.13.0" apply false
     id("org.jetbrains.kotlin.android") version "2.1.10" apply false
-    id("org.lineageos.generatebp") version "+" apply false
 }
 
 tasks.register<Delete>("clean").configure { delete(rootProject.layout.buildDirectory) }
