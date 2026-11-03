@@ -5,6 +5,8 @@
 
 package org.prauga.recorder.list
 
+import android.text.format.DateUtils
+import android.text.format.Formatter
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -86,6 +88,9 @@ class RecordingsAdapter(
         // Views
         private val dateTextView by lazy { itemView.findViewById<TextView>(R.id.dateTextView) }
         private val menuImageView by lazy { itemView.findViewById<ImageView>(R.id.menuImageView) }
+        private val favouriteImageView by lazy {
+            itemView.findViewById<ImageView>(R.id.favouriteImageView)
+        }
         private val playImageView by lazy { itemView.findViewById<ImageView>(R.id.playImageView) }
         private val titleTextView by lazy { itemView.findViewById<TextView>(R.id.titleTextView) }
 
@@ -111,6 +116,7 @@ class RecordingsAdapter(
         init {
             itemView.setOnClickListener { callbacks.onPlay(recording) }
             menuImageView.setOnClickListener { showPopupMenu(it) }
+            favouriteImageView.setOnClickListener { callbacks.onToggleFavourite(recording) }
         }
 
         fun onViewAttachedToWindow() {
@@ -128,12 +134,27 @@ class RecordingsAdapter(
             this.isSelected = isSelected
 
             titleTextView.text = recording.title
+            val context = itemView.context
             dateTextView.text =
-                String.format(
-                    Locale.getDefault(),
-                    SUMMARY_FORMAT,
-                    dateFormatter.format(recording.dateAdded),
-                    timeFormatter.format(recording.dateAdded),
+                listOfNotNull(
+                        String.format(
+                            Locale.getDefault(),
+                            SUMMARY_FORMAT,
+                            dateFormatter.format(recording.dateAdded),
+                            timeFormatter.format(recording.dateAdded),
+                        ),
+                        DateUtils.formatElapsedTime(recording.duration / 1000),
+                        Formatter.formatShortFileSize(context, recording.size),
+                        recording.locationName,
+                    )
+                    .plus(recording.labels)
+                    .joinToString(" · ")
+            favouriteImageView.setImageResource(
+                if (recording.favourite) R.drawable.ic_star else R.drawable.ic_star_border
+            )
+            favouriteImageView.contentDescription =
+                context.getString(
+                    if (recording.favourite) R.string.unfavourite else R.string.favourite
                 )
 
             updateSelection()

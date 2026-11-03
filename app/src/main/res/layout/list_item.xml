@@ -30,6 +30,16 @@
         app:tint="?attr/colorOnBackground" />
 
     <ImageView
+        android:id="@+id/favouriteImageView"
+        style="@style/AppTheme.ImageButton"
+        android:contentDescription="@string/favourite"
+        android:src="@drawable/ic_star_border"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/menuImageView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?attr/colorOnBackground" />
+
+    <ImageView
         android:id="@+id/menuImageView"
         style="@style/AppTheme.ImageButton"
         android:contentDescription="@string/list_item_menu"
@@ -41,14 +51,18 @@
 
     <TextView
         android:id="@+id/dateTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toStartOf="@id/favouriteImageView"
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
         android:layout_marginStart="16dp"
         android:textColor="?android:attr/textColorSecondary"
         app:layout_constraintStart_toEndOf="@id/playImageView"
         app:layout_constraintTop_toBottomOf="@id/titleTextView"
-        tools:text="1970-01-01" />
+        tools:text="1970-01-01 · 3:45 · 1.2 MB" />
 
     <TextView
         android:id="@+id/titleTextView"
@@ -62,7 +76,7 @@
         android:textSize="16sp"
         app:layout_constraintStart_toEndOf="@id/playImageView"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/menuImageView"
+        app:layout_constraintEnd_toStartOf="@id/favouriteImageView"
         tools:text="Recording name" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
