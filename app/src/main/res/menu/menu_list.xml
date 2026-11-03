@@ -8,6 +8,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:iconTint="?attr/colorOnSurface"
+        app:showAsAction="ifRoom|collapseActionView" />
+
+    <item
         style="@style/AppTheme.MenuItem"
         android:id="@+id/action_delete_all"
         android:title="@string/delete_all"

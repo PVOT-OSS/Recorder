@@ -14,8 +14,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import org.prauga.recorder.data.RecordingsDatabase
@@ -27,8 +32,45 @@ import org.prauga.recorder.utils.Utils
 class RecordingsViewModel(application: Application) : AndroidViewModel(application) {
     private val contentResolver = applicationContext.contentResolver
 
-    val recordings =
+    sealed interface Filter {
+        data object All : Filter
+
+        data object Favourites : Filter
+
+        data class Label(val name: String) : Filter
+    }
+
+    val query = MutableStateFlow("")
+    val filter = MutableStateFlow<Filter>(Filter.All)
+
+    private val allRecordings: StateFlow<List<Recording>?> =
         RecordingsRepository.recordings(applicationContext)
+            .flowOn(Dispatchers.IO)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+
+    val labels: StateFlow<List<String>> =
+        allRecordings
+            .map { list -> list.orEmpty().flatMap { it.labels }.distinct().sorted() }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), listOf())
+
+    val recordings: StateFlow<List<Recording>> =
+        combine(allRecordings.filterNotNull(), query, filter) { list, query, filter ->
+                val matches =
+                    query
+                        .trim()
+                        .takeIf { it.isNotEmpty() }
+                        ?.let { RecordingsDatabase.get(applicationContext).search(it) }
+                list.filter { recording ->
+                    (matches == null ||
+                        recording.id in matches ||
+                        recording.title.contains(query.trim(), ignoreCase = true)) &&
+                        when (filter) {
+                            Filter.All -> true
+                            Filter.Favourites -> recording.favourite
+                            is Filter.Label -> filter.name in recording.labels
+                        }
+                }
+            }
             .flowOn(Dispatchers.IO)
             .stateIn(
                 viewModelScope,

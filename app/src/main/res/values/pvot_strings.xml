@@ -24,6 +24,13 @@
     <string name="edit_saving">Saving a copy…</string>
     <string name="edit_failed">Couldn\'t save the edited copy</string>
 
+    <!-- List -->
+    <string name="search">Search</string>
+    <string name="search_hint">Search titles, places, labels and words</string>
+    <string name="filter_all">All</string>
+    <string name="filter_favourites">Favourites</string>
+    <string name="list_no_results">No recordings match</string>
+
     <!-- Rename -->
     <string name="rename_suggest">Suggest</string>
 

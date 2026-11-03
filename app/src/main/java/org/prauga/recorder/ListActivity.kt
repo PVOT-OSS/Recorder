@@ -15,6 +15,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -30,6 +31,8 @@ import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -217,17 +220,58 @@ class ListActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { model.labels.collectLatest { updateFilterChips(it) } }
                 model.recordings.collectLatest {
                     recordingsAdapter.submitList(it)
 
                     listLoadingProgressBar.isVisible = false
 
                     val isEmpty = it.isEmpty()
+                    listEmptyTextView.setText(
+                        if (
+                            model.query.value.isBlank() &&
+                                model.filter.value == RecordingsViewModel.Filter.All
+                        )
+                            R.string.list_error_empty
+                        else R.string.list_no_results
+                    )
                     changeEmptyView(isEmpty)
                     if (isEmpty) {
                         endSelectionMode()
                     }
                 }
+            }
+        }
+    }
+
+    private fun updateFilterChips(labels: List<String>) {
+        val group = findViewById<ChipGroup>(R.id.filterChipGroup)
+        group.setOnCheckedStateChangeListener(null)
+        group.removeAllViews()
+        val filters =
+            listOf(RecordingsViewModel.Filter.All, RecordingsViewModel.Filter.Favourites) +
+                labels.map { RecordingsViewModel.Filter.Label(it) }
+        if (model.filter.value !in filters) model.filter.value = RecordingsViewModel.Filter.All
+        for (filter in filters) {
+            val chip =
+                Chip(this).apply {
+                    id = View.generateViewId()
+                    isCheckable = true
+                    text =
+                        when (filter) {
+                            RecordingsViewModel.Filter.All -> getString(R.string.filter_all)
+                            RecordingsViewModel.Filter.Favourites ->
+                                getString(R.string.filter_favourites)
+                            is RecordingsViewModel.Filter.Label -> filter.name
+                        }
+                    tag = filter
+                }
+            group.addView(chip)
+            if (filter == model.filter.value) group.check(chip.id)
+        }
+        group.setOnCheckedStateChangeListener { g, ids ->
+            ids.firstOrNull()?.let {
+                model.filter.value = g.findViewById<Chip>(it).tag as RecordingsViewModel.Filter
             }
         }
     }
@@ -261,6 +305,24 @@ class ListActivity : AppCompatActivity() {
         super.onCreateOptionsMenu(menu)
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_list, menu)
+        (menu.findItem(R.id.action_search)?.actionView as? SearchView)?.apply {
+            queryHint = getString(R.string.search_hint)
+            maxWidth = Int.MAX_VALUE
+            if (model.query.value.isNotEmpty()) {
+                menu.findItem(R.id.action_search).expandActionView()
+                setQuery(model.query.value, false)
+            }
+            setOnQueryTextListener(
+                object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String) = true
+
+                    override fun onQueryTextChange(newText: String): Boolean {
+                        model.query.value = newText
+                        return true
+                    }
+                }
+            )
+        }
         return true
     }
 
