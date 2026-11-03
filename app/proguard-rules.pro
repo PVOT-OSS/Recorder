@@ -18,3 +18,9 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# Vosk talks to libvosk through JNA, which needs the classes and their members intact
+-keep class com.sun.jna.** { *; }
+-keep class * implements com.sun.jna.** { *; }
+-keep class org.vosk.** { *; }
+-dontwarn java.awt.**

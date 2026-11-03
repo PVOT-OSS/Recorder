@@ -65,6 +65,21 @@ class PreferencesManager(context: Context) {
             preferences.edit().putBoolean(PREF_SKIP_SILENCE, value).apply()
         }
 
+    var transcribe: Boolean
+        get() = preferences.getBoolean(PREF_TRANSCRIBE, true)
+        set(value) {
+            preferences.edit().putBoolean(PREF_TRANSCRIBE, value).apply()
+        }
+
+    var speechModel: String?
+        get() = preferences.getString(PREF_SPEECH_MODEL, null)
+        set(value) {
+            preferences.edit().putString(PREF_SPEECH_MODEL, value).apply()
+        }
+
+    val downloadOnWifiOnly: Boolean
+        get() = preferences.getBoolean(PREF_WIFI_ONLY, true)
+
     val theme: String?
         get() = preferences.getString(PREF_THEME, null)
 
@@ -93,6 +108,9 @@ class PreferencesManager(context: Context) {
         const val PREFS = "preferences"
         const val PREF_TAG_WITH_LOCATION = "tag_with_location"
         const val PREF_THEME = "theme"
+        const val PREF_TRANSCRIBE = "transcribe"
+        const val PREF_SPEECH_MODEL = "speech_model"
+        const val PREF_WIFI_ONLY = "models_wifi_only"
         private const val PREF_PLAYBACK_SPEED = "playback_speed"
         private const val PREF_SKIP_SILENCE = "skip_silence"
 
