@@ -10,6 +10,10 @@ plugins {
     id("kotlin-android")
 }
 
+val versionMajor = 1
+val versionMinor = 1
+val versionPatch = 0
+
 android {
     compileSdk = 36
     namespace = "org.prauga.recorder"
@@ -18,8 +22,8 @@ android {
         applicationId = "org.prauga.recorder"
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.1"
+        versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
+        versionName = "$versionMajor.$versionMinor.$versionPatch"
     }
 
     buildTypes {
