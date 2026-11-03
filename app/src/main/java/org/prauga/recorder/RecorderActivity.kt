@@ -144,6 +144,8 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
             settingsImageView.isVisible = false
         }
 
+        pendingAction = intent.action
+
         doBindService()
 
         OnBoardingHelper.onBoardList(this, openSoundListImageView)
@@ -171,8 +173,28 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        pendingAction = intent.action
+        if (service != null) applyPendingAction()
+    }
+
+    /** START/STOP from the tile, widget, shortcut or automation apps, applied once connected. */
+    private fun applyPendingAction() {
+        val action = pendingAction ?: return
+        pendingAction = null
+        when {
+            action == ACTION_START_RECORDING && uiStatus == UiStatus.READY -> toggleSoundRecorder()
+            action == ACTION_STOP_RECORDING && uiStatus != UiStatus.READY -> toggleSoundRecorder()
+            action == ACTION_TOGGLE_RECORDING -> toggleSoundRecorder()
+        }
+    }
+
+    private var pendingAction: String? = null
+
     private fun setStatus(status: UiStatus) {
         applyUiStatus(status)
+        applyPendingAction()
 
         if (returnAudio && hasRecordedAudio) {
             Utils.cancelShareNotification(this)
@@ -362,6 +384,10 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
         }
 
     companion object {
+        const val ACTION_START_RECORDING = "org.prauga.recorder.action.START_RECORDING"
+        const val ACTION_STOP_RECORDING = "org.prauga.recorder.action.STOP_RECORDING"
+        const val ACTION_TOGGLE_RECORDING = "org.prauga.recorder.action.TOGGLE_RECORDING"
+
         private const val FILE_NAME_BASE = "%1\$s (%2\$s)"
         private const val FILE_NAME_FALLBACK = "Sound record"
     }

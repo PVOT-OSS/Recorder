@@ -4,6 +4,11 @@
      SPDX-License-Identifier: Apache-2.0
 -->
 <resources>
+    <!-- Entry points -->
+    <string name="shortcut_record">Start recording</string>
+    <string name="tile_label">Record audio</string>
+    <string name="widget_description">Start a recording or open your recordings</string>
+
     <!-- Recording guards -->
     <string name="guard_title">Recording stopped and saved</string>
     <string name="guard_storage">The phone is almost out of storage</string>

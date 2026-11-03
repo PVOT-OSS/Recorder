@@ -5,6 +5,19 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
 
     <shortcut
+        android:shortcutId="record"
+        android:enabled="true"
+        android:icon="@drawable/ic_mic"
+        android:shortcutShortLabel="@string/shortcut_record"
+        android:shortcutLongLabel="@string/shortcut_record">
+
+        <intent
+            android:action="org.prauga.recorder.action.START_RECORDING"
+            android:targetPackage="org.prauga.recorder"
+            android:targetClass="org.prauga.recorder.RecorderActivity" />
+    </shortcut>
+
+    <shortcut
         android:shortcutId="list"
         android:enabled="true"
         android:icon="@drawable/ic_library_music"

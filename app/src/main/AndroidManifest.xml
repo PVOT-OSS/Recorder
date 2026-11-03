@@ -30,7 +30,8 @@
 
         <activity
             android:name=".RecorderActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.PHONE_STATE" />
@@ -38,6 +39,14 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="org.prauga.recorder.action.START_RECORDING" />
+                <action android:name="org.prauga.recorder.action.STOP_RECORDING" />
+                <action android:name="org.prauga.recorder.action.TOGGLE_RECORDING" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
             <meta-data
