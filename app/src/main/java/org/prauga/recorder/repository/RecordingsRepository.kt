@@ -14,8 +14,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
+import org.prauga.recorder.data.RecordingsDatabase
 import org.prauga.recorder.flow.RecordingsFlow
+import org.prauga.recorder.models.Recording
 
 object RecordingsRepository {
     private val LOG_TAG = this::class.simpleName!!
@@ -27,7 +31,32 @@ object RecordingsRepository {
     private const val PATH = "Recordings/${ALBUM}"
     private const val PATH_LEGACY = "Music/${ALBUM}"
 
-    fun recordings(context: Context) = RecordingsFlow(context).flowData()
+    fun recordings(context: Context): Flow<List<Recording>> {
+        val db = RecordingsDatabase.get(context)
+        return RecordingsFlow(context).flowData().combine(db.changes) { list, _ ->
+            sync(db, list)
+            val metadata = db.metadata()
+            list.map { recording ->
+                metadata[recording.id]?.let {
+                    recording.copy(
+                        favourite = it.favourite,
+                        labels = it.labels,
+                        locationName = it.locationName,
+                    )
+                } ?: recording
+            }
+        }
+    }
+
+    private fun sync(db: RecordingsDatabase, list: List<Recording>) {
+        db.retainOnly(list.map { it.id }.toSet())
+        val indexed = db.indexedIds()
+        for (recording in list) {
+            if (recording.id !in indexed) {
+                db.reindex(recording.id, recording.title)
+            }
+        }
+    }
 
     suspend fun addRecordingToContentProvider(context: Context, file: File, mimeType: String) =
         withContext(Dispatchers.IO) {

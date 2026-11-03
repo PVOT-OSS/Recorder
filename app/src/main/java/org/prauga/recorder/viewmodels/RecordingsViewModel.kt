@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
+import org.prauga.recorder.data.RecordingsDatabase
 import org.prauga.recorder.ext.applicationContext
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.repository.RecordingsRepository
@@ -63,6 +64,7 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
                 }
 
             contentResolver.update(recording.uri, contentValues, null, null)
+            RecordingsDatabase.get(applicationContext).reindex(recording.id, newName)
         }
     }
 

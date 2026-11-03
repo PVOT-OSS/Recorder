@@ -44,10 +44,12 @@ class RecordingsFlow(val context: Context) : QueryFlow<Recording>() {
             val displayName = it.getString(indexCache[i++])
             val dateAdded = it.getLong(indexCache[i++])
             val duration = it.getLong(indexCache[i++])
+            val mimeType = it.getString(indexCache[i++]) ?: ""
+            val size = it.getLong(indexCache[i++])
 
             val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
 
-            Recording.fromMediaStore(uri, displayName, dateAdded, duration)
+            Recording.fromMediaStore(uri, displayName, dateAdded, duration, id, mimeType, size)
         }
 
     companion object {
@@ -57,6 +59,8 @@ class RecordingsFlow(val context: Context) : QueryFlow<Recording>() {
                 MediaStore.Audio.Media.DISPLAY_NAME,
                 MediaStore.Audio.Media.DATE_ADDED,
                 MediaStore.Audio.Media.DURATION,
+                MediaStore.Audio.Media.MIME_TYPE,
+                MediaStore.Audio.Media.SIZE,
             )
     }
 }
