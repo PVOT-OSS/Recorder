@@ -58,6 +58,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
     var selectionEnabled = false
         set(value) {
             field = value
+            updateGestureExclusion()
             if (value && selectionEndMs <= selectionStartMs) {
                 selectionStartMs = 0
                 selectionEndMs = durationMs
@@ -233,6 +234,18 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
         dragging = false
         positionMs = ms
         dragging = wasDragging
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        updateGestureExclusion()
+    }
+
+    /** Edge handles would otherwise start the system back gesture. */
+    private fun updateGestureExclusion() {
+        systemGestureExclusionRects =
+            if (selectionEnabled) listOf(android.graphics.Rect(0, 0, width, height))
+            else emptyList()
     }
 
     override fun performClick() = super.performClick()
