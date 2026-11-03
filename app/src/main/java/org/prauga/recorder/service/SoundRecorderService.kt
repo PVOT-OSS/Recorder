@@ -15,6 +15,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -41,6 +43,7 @@ import kotlinx.coroutines.launch
 import org.prauga.recorder.ListActivity
 import org.prauga.recorder.R
 import org.prauga.recorder.RecorderActivity
+import org.prauga.recorder.audio.EngineRecorder
 import org.prauga.recorder.models.UiStatus
 import org.prauga.recorder.repository.RecordingsRepository
 import org.prauga.recorder.utils.PreferencesManager
@@ -148,10 +151,11 @@ class SoundRecorderService : LifecycleService() {
         }
 
         recorder =
-            when (preferencesManager.recordInHighQuality) {
-                true -> HighQualityRecorder()
-                else -> GoodQualityRecorder(this)
-            }
+            EngineRecorder(
+                preferencesManager.qualityConfig,
+                preferredInputDevice(),
+                preferencesManager.clearVoice,
+            )
 
         return recorder?.let { recorder ->
             val file =
@@ -180,6 +184,16 @@ class SoundRecorderService : LifecycleService() {
         } ?: false
     }
 
+    private fun preferredInputDevice(): AudioDeviceInfo? {
+        val id = preferencesManager.inputDeviceId
+        if (id == 0) {
+            return null
+        }
+        return getSystemService(AudioManager::class.java)
+            .getDevices(AudioManager.GET_DEVICES_INPUTS)
+            .firstOrNull { it.id == id }
+    }
+
     private fun stopRecording(): Boolean {
         val recorder =
             recorder
@@ -205,6 +219,7 @@ class SoundRecorderService : LifecycleService() {
                             this@SoundRecorderService,
                             it,
                             recorder.mimeType,
+                            preferencesManager.qualityPreset.key,
                         )
                         ?.also { uri -> onRecordCompleted(uri) }
                         ?: run { Log.e(TAG, "Failed to save recording") }

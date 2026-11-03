@@ -5,6 +5,7 @@
 
 package org.prauga.recorder.repository
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.os.Build
@@ -17,7 +18,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
+import org.prauga.recorder.audio.WaveformSink
 import org.prauga.recorder.data.RecordingsDatabase
+import org.prauga.recorder.data.Waveforms
 import org.prauga.recorder.flow.RecordingsFlow
 import org.prauga.recorder.models.Recording
 
@@ -58,7 +61,12 @@ object RecordingsRepository {
         }
     }
 
-    suspend fun addRecordingToContentProvider(context: Context, file: File, mimeType: String) =
+    suspend fun addRecordingToContentProvider(
+        context: Context,
+        file: File,
+        mimeType: String,
+        quality: String? = null,
+    ) =
         withContext(Dispatchers.IO) {
             val contentResolver = context.contentResolver
 
@@ -81,6 +89,11 @@ object RecordingsRepository {
                     val values =
                         ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }
                     contentResolver.update(uri, values, null, null)
+                    val id = ContentUris.parseId(uri)
+                    Waveforms.adopt(context, WaveformSink.waveformFor(file), id)
+                    RecordingsDatabase.get(context).let { db ->
+                        db.upsert(db.metadata(id).copy(quality = quality))
+                    }
                     try {
                         file.delete()
                     } catch (e: IOException) {

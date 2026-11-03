@@ -10,6 +10,7 @@ import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
+import org.prauga.recorder.audio.QualityPreset
 import org.prauga.recorder.utils.PermissionManager
 import org.prauga.recorder.utils.PreferencesManager
 
@@ -91,13 +92,14 @@ class DialogActivity : AppCompatActivity() {
     }
 
     private fun setupHighQualitySwitch(highQualitySwitch: MaterialSwitch, isRecording: Boolean) {
-        val highQuality = preferences.recordInHighQuality
+        val highQuality = preferences.qualityPreset == QualityPreset.LOSSLESS
         highQualitySwitch.isChecked = highQuality
         if (isRecording) {
             highQualitySwitch.isEnabled = false
         } else {
             highQualitySwitch.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                preferences.recordInHighQuality = isChecked
+                preferences.qualityPreset =
+                    if (isChecked) QualityPreset.LOSSLESS else QualityPreset.STANDARD
             }
         }
     }
