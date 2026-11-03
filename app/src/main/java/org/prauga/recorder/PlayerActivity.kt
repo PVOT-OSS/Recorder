@@ -47,6 +47,7 @@ import org.prauga.recorder.audio.WaveformExtractor
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.playback.PlaybackService
 import org.prauga.recorder.repository.RecordingsRepository
+import org.prauga.recorder.transcription.Keywords
 import org.prauga.recorder.transcription.TranscriptExport
 import org.prauga.recorder.ui.LabelsDialog
 import org.prauga.recorder.ui.PlaybackWaveformView
@@ -357,7 +358,11 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
             R.id.action_share ->
                 startActivity(RecordIntentHelper.getShareIntent(recording.uri, recording.mimeType))
             R.id.action_rename ->
-                RenameDialog.show(this, recording.title.substringBeforeLast('.')) { name ->
+                RenameDialog.show(
+                    this,
+                    recording.title.substringBeforeLast('.'),
+                    Keywords.suggestTitles(transcriptPane.transcript, recording.locationName),
+                ) { name ->
                     lifecycleScope.launch {
                         val newName = name + "." + recording.title.substringAfterLast('.', "m4a")
                         model.renameRecording(recording, newName)

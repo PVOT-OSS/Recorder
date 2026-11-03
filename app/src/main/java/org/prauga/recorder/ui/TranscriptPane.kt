@@ -27,6 +27,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -40,6 +42,7 @@ import org.prauga.recorder.R
 import org.prauga.recorder.data.RecordingsDatabase
 import org.prauga.recorder.data.Segment
 import org.prauga.recorder.models.Recording
+import org.prauga.recorder.transcription.Keywords
 import org.prauga.recorder.transcription.ModelManager
 import org.prauga.recorder.transcription.TranscriptionService
 
@@ -124,6 +127,7 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
                             }
                         segments = s
                         speakers = names
+                        showKeywords()
                         current = -1
                         search(query)
                         adapter.notifyDataSetChanged()
@@ -132,6 +136,30 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
                     }
             }
         }
+    }
+
+    /** Keyword chips above the waveform; tapping one finds it in the transcript. */
+    private fun showKeywords() {
+        val group = activity.findViewById<ChipGroup>(R.id.tagChipGroup)
+        (0 until group.childCount)
+            .map { group.getChildAt(it) }
+            .filter { it.tag == KEYWORD_TAG }
+            .forEach { group.removeView(it) }
+        for (keyword in Keywords.extract(segments)) {
+            group.addView(
+                Chip(activity).apply {
+                    text = keyword
+                    tag = KEYWORD_TAG
+                    setOnClickListener {
+                        showSearch(true)
+                        searchEdit.setText(keyword)
+                        searchEdit.setSelection(keyword.length)
+                        step(0)
+                    }
+                }
+            )
+        }
+        group.isVisible = group.childCount > 0
     }
 
     private fun updateEmpty(fraction: Float?) {
@@ -335,5 +363,6 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
 
     companion object {
         private const val FOLLOW_DELAY_MS = 4000L
+        private const val KEYWORD_TAG = "keyword"
     }
 }
