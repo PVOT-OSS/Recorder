@@ -19,6 +19,13 @@
             app:title="@string/settings_quality"
             app:useSimpleSummaryProvider="true" />
 
+        <ListPreference
+            app:defaultValue="0"
+            app:iconSpaceReserved="false"
+            app:key="input_device"
+            app:title="@string/settings_microphone"
+            app:useSimpleSummaryProvider="true" />
+
         <SwitchPreferenceCompat
             app:defaultValue="false"
             app:iconSpaceReserved="false"

@@ -74,6 +74,11 @@
     <string name="settings_clear_voice_summary">Reduce background noise and level the volume while recording</string>
     <string name="settings_microphone">Microphone</string>
     <string name="settings_microphone_auto">Automatic</string>
+    <string name="settings_microphone_builtin">Phone microphone</string>
+    <string name="settings_microphone_wired">Wired headset</string>
+    <string name="settings_microphone_usb">USB microphone</string>
+    <string name="settings_microphone_bluetooth">Bluetooth (%1$s)</string>
+    <string name="settings_microphone_other">%1$s</string>
     <string name="settings_location">Tag recordings with location</string>
     <string name="settings_theme">Theme</string>
     <string name="settings_theme_system">System default</string>

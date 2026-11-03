@@ -5,6 +5,8 @@
 
 package org.prauga.recorder
 
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -78,6 +80,8 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
                     }
                 }
 
+            setupMicrophones()
+
             findPreference<ListPreference>(PreferencesManager.PREF_THEME)
                 ?.setOnPreferenceChangeListener { _, value ->
                     PreferencesManager.applyTheme(value as String)
@@ -99,6 +103,34 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
             }
         }
 
+        private fun setupMicrophones() {
+            val pref =
+                findPreference<ListPreference>(PreferencesManager.PREF_INPUT_DEVICE) ?: return
+            val devices =
+                requireContext()
+                    .getSystemService(AudioManager::class.java)
+                    .getDevices(AudioManager.GET_DEVICES_INPUTS)
+                    .filter { it.type in SUPPORTED_INPUTS }
+                    .distinctBy { it.type to it.productName.toString() }
+            pref.entries =
+                arrayOf(getString(R.string.settings_microphone_auto)) +
+                    devices.map { describe(it) }.toTypedArray()
+            pref.entryValues = arrayOf("0") + devices.map { it.id.toString() }.toTypedArray()
+            if (pref.findIndexOfValue(pref.value) < 0) pref.value = "0"
+        }
+
+        private fun describe(device: AudioDeviceInfo) =
+            when (device.type) {
+                AudioDeviceInfo.TYPE_BUILTIN_MIC -> getString(R.string.settings_microphone_builtin)
+                AudioDeviceInfo.TYPE_WIRED_HEADSET -> getString(R.string.settings_microphone_wired)
+                AudioDeviceInfo.TYPE_USB_DEVICE,
+                AudioDeviceInfo.TYPE_USB_HEADSET -> getString(R.string.settings_microphone_usb)
+                AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+                AudioDeviceInfo.TYPE_BLE_HEADSET ->
+                    getString(R.string.settings_microphone_bluetooth, device.productName)
+                else -> getString(R.string.settings_microphone_other, device.productName)
+            }
+
         override fun onResume() {
             super.onResume()
             if (permissionManager.hasLocationPermission() && preferences.tagWithLocation) {
@@ -110,5 +142,15 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
 
     companion object {
         const val EXTRA_IS_RECORDING = "is_recording"
+
+        private val SUPPORTED_INPUTS =
+            setOf(
+                AudioDeviceInfo.TYPE_BUILTIN_MIC,
+                AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                AudioDeviceInfo.TYPE_USB_DEVICE,
+                AudioDeviceInfo.TYPE_USB_HEADSET,
+                AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+                AudioDeviceInfo.TYPE_BLE_HEADSET,
+            )
     }
 }
