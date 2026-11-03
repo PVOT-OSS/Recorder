@@ -7,8 +7,9 @@ package org.prauga.recorder.transcription
 
 import android.content.Context
 import android.net.Uri
+import java.io.ByteArrayInputStream
 import java.io.File
-import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.prauga.recorder.audio.PcmDecoder
@@ -121,8 +122,29 @@ object SoundTagger {
         return tags
     }
 
-    private fun labels(file: File): List<String> =
-        ZipFile(file).use { zip ->
-            zip.getInputStream(zip.entries().nextElement()).bufferedReader().readLines()
+    /**
+     * The labels are a zip appended to the model (TFLite metadata), which [java.util.zip.ZipFile]
+     * rejects because of the prefix; read it from its local header instead, once.
+     */
+    private fun labels(file: File): List<String> {
+        val cache = File(file.parentFile, "labels.txt")
+        if (cache.exists()) return cache.readLines()
+        val bytes = file.readBytes()
+        val signature = byteArrayOf(0x50, 0x4B, 0x03, 0x04)
+        var offset = -1
+        for (i in bytes.size - signature.size downTo 0) {
+            if ((0 until 4).all { bytes[i + it] == signature[it] }) {
+                offset = i
+                break
+            }
         }
+        check(offset >= 0) { "No label list in ${file.name}" }
+        val labels =
+            ZipInputStream(ByteArrayInputStream(bytes, offset, bytes.size - offset)).use {
+                it.nextEntry ?: error("Empty label list")
+                it.bufferedReader().readLines()
+            }
+        cache.writeText(labels.joinToString("\n"))
+        return labels
+    }
 }
