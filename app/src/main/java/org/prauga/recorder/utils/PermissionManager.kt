@@ -23,9 +23,6 @@ class PermissionManager(private val activity: Activity) {
         if (!hasRecordAudioPermission()) {
             missingPermissions.add(permission.RECORD_AUDIO)
         }
-        if (!hasPhoneReadStatusPermission()) {
-            missingPermissions.add(permission.READ_PHONE_STATE)
-        }
         if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 !notificationManager.areNotificationsEnabled()
@@ -51,21 +48,14 @@ class PermissionManager(private val activity: Activity) {
 
     fun hasEssentialPermissions(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            hasRecordAudioPermission() &&
-                hasPhoneReadStatusPermission() &&
-                notificationManager.areNotificationsEnabled()
+            hasRecordAudioPermission() && notificationManager.areNotificationsEnabled()
         } else {
-            hasRecordAudioPermission() && hasPhoneReadStatusPermission()
+            hasRecordAudioPermission()
         }
     }
 
     fun hasRecordAudioPermission(): Boolean {
         return (activity.checkSelfPermission(permission.RECORD_AUDIO) ==
-            PackageManager.PERMISSION_GRANTED)
-    }
-
-    fun hasPhoneReadStatusPermission(): Boolean {
-        return (activity.checkSelfPermission(permission.READ_PHONE_STATE) ==
             PackageManager.PERMISSION_GRANTED)
     }
 
@@ -77,16 +67,12 @@ class PermissionManager(private val activity: Activity) {
     fun onEssentialPermissionsDenied() {
         if (
             activity.shouldShowRequestPermissionRationale(permission.POST_NOTIFICATIONS) ||
-                activity.shouldShowRequestPermissionRationale(permission.READ_PHONE_STATE) ||
                 activity.shouldShowRequestPermissionRationale(permission.RECORD_AUDIO)
         ) {
             // Explain the user why the denied permission is needed
             var error = 0
             if (!hasRecordAudioPermission()) {
                 error = error or 1
-            }
-            if (!hasPhoneReadStatusPermission()) {
-                error = error or (1 shl 1)
             }
             if (
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
