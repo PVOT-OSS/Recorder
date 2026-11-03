@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <color name="tag_music">#557E57C2</color>
+    <color name="tag_singing">#55EC407A</color>
+    <color name="tag_applause">#55FFA726</color>
+    <color name="tag_laughter">#55FFCA28</color>
+    <color name="tag_animal">#5566BB6A</color>
+</resources>

@@ -54,6 +54,13 @@
     <string name="transcript_export_srt">Subtitles (SRT)</string>
     <string name="transcript_export_vtt">Subtitles (WebVTT)</string>
 
+    <!-- Sound labels -->
+    <string name="tag_music">Music</string>
+    <string name="tag_singing">Singing</string>
+    <string name="tag_applause">Applause</string>
+    <string name="tag_laughter">Laughter</string>
+    <string name="tag_animal">Animals</string>
+
     <!-- Player -->
     <string name="player_waveform">Playback position</string>
     <string name="player_speed">Playback speed</string>

@@ -19,6 +19,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Lifecycle
@@ -41,9 +42,11 @@ import org.prauga.recorder.PlayerActivity
 import org.prauga.recorder.R
 import org.prauga.recorder.data.RecordingsDatabase
 import org.prauga.recorder.data.Segment
+import org.prauga.recorder.data.Tag
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.transcription.Keywords
 import org.prauga.recorder.transcription.ModelManager
+import org.prauga.recorder.transcription.SoundTagger
 import org.prauga.recorder.transcription.TranscriptionService
 
 /** The transcript under the player: follows playback, seeks on tap, edits and searches. */
@@ -125,6 +128,8 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
                             withContext(Dispatchers.IO) {
                                 db.segments(recording.id) to db.speakers(recording.id)
                             }
+                        val tags = withContext(Dispatchers.IO) { db.tags(recording.id) }
+                        showTags(tags)
                         segments = s
                         speakers = names
                         showKeywords()
@@ -137,6 +142,61 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
             }
         }
     }
+
+    /** Notable sound labels: tinted on the waveform, chips cycle through their occurrences. */
+    private fun showTags(tags: List<Tag>) {
+        val notable = tags.filter { it.label in SoundTagger.NOTABLE }
+        activity.waveformView.ranges =
+            notable.map {
+                PlaybackWaveformView.Range(
+                    it.startMs,
+                    it.endMs,
+                    ContextCompat.getColor(activity, tagColor(it.label)),
+                )
+            }
+        val group = activity.findViewById<ChipGroup>(R.id.tagChipGroup)
+        (0 until group.childCount)
+            .map { group.getChildAt(it) }
+            .filter { it.tag == SOUND_TAG }
+            .forEach { group.removeView(it) }
+        notable
+            .groupBy { it.label }
+            .entries
+            .forEachIndexed { index, (label, ranges) ->
+                var next = 0
+                group.addView(
+                    Chip(activity).apply {
+                        text = activity.getString(tagName(label))
+                        tag = SOUND_TAG
+                        chipBackgroundColor =
+                            android.content.res.ColorStateList.valueOf(
+                                ContextCompat.getColor(activity, tagColor(label))
+                            )
+                        setOnClickListener { activity.seekTo(ranges[next++ % ranges.size].startMs) }
+                    },
+                    index,
+                )
+            }
+        group.isVisible = group.childCount > 0
+    }
+
+    private fun tagName(label: String) =
+        when (label) {
+            SoundTagger.MUSIC -> R.string.tag_music
+            SoundTagger.SINGING -> R.string.tag_singing
+            SoundTagger.APPLAUSE -> R.string.tag_applause
+            SoundTagger.LAUGHTER -> R.string.tag_laughter
+            else -> R.string.tag_animal
+        }
+
+    private fun tagColor(label: String) =
+        when (label) {
+            SoundTagger.MUSIC -> R.color.tag_music
+            SoundTagger.SINGING -> R.color.tag_singing
+            SoundTagger.APPLAUSE -> R.color.tag_applause
+            SoundTagger.LAUGHTER -> R.color.tag_laughter
+            else -> R.color.tag_animal
+        }
 
     /** Keyword chips above the waveform; tapping one finds it in the transcript. */
     private fun showKeywords() {
@@ -383,5 +443,6 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
     companion object {
         private const val FOLLOW_DELAY_MS = 4000L
         private const val KEYWORD_TAG = "keyword"
+        private const val SOUND_TAG = "sound"
     }
 }
