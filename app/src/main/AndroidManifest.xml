@@ -71,10 +71,6 @@
             android:label="@string/delete_title"
             android:theme="@style/AppTheme.DialogActivity" />
 
-        <activity
-            android:name=".ListActivity"
-            android:label="@string/list_title"
-            android:parentActivityName=".RecorderActivity" />
 
         <activity
             android:name=".transcription.ModelsActivity"
@@ -84,12 +80,12 @@
         <activity
             android:name=".TrashActivity"
             android:label="@string/trash_title"
-            android:parentActivityName=".ListActivity" />
+            android:parentActivityName=".RecorderActivity" />
 
         <activity
             android:name=".PlayerActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".ListActivity" />
+            android:parentActivityName=".RecorderActivity" />
 
         <activity
             android:name=".SettingsActivity"

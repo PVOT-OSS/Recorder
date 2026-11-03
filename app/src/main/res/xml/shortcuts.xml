@@ -17,16 +17,4 @@
             android:targetClass="org.prauga.recorder.RecordActionActivity" />
     </shortcut>
 
-    <shortcut
-        android:shortcutId="list"
-        android:enabled="true"
-        android:icon="@drawable/ic_library_music"
-        android:shortcutShortLabel="@string/list_title"
-        android:shortcutLongLabel="@string/list_title">
-
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="org.prauga.recorder"
-            android:targetClass="org.prauga.recorder.ListActivity" />
-    </shortcut>
 </shortcuts>

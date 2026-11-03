@@ -12,7 +12,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import org.prauga.recorder.ListActivity
 import org.prauga.recorder.R
 import org.prauga.recorder.RecordActionActivity
 import org.prauga.recorder.RecorderActivity
@@ -51,7 +50,7 @@ class RecorderWidget : AppWidgetProvider() {
                     PendingIntent.getActivity(
                         context,
                         1,
-                        Intent(context, ListActivity::class.java)
+                        Intent(context, RecorderActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                         PendingIntent.FLAG_IMMUTABLE,
                     ),

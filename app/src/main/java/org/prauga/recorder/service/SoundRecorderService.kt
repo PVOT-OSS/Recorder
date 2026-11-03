@@ -43,7 +43,6 @@ import java.lang.ref.WeakReference
 import java.util.Timer
 import java.util.TimerTask
 import kotlinx.coroutines.launch
-import org.prauga.recorder.ListActivity
 import org.prauga.recorder.PlayerActivity
 import org.prauga.recorder.R
 import org.prauga.recorder.RecorderActivity
@@ -678,7 +677,7 @@ class SoundRecorderService : LifecycleService() {
                     return null
                 }
 
-        val intent = Intent(this, ListActivity::class.java)
+        val intent = Intent(this, RecorderActivity::class.java)
 
         val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 

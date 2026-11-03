@@ -100,7 +100,7 @@ class TranscriptionService : LifecycleService() {
                 PendingIntent.getActivity(
                     this,
                     0,
-                    Intent(this, org.prauga.recorder.ListActivity::class.java),
+                    Intent(this, org.prauga.recorder.RecorderActivity::class.java),
                     PendingIntent.FLAG_IMMUTABLE,
                 )
             )
