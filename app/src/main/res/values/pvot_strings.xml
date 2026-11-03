@@ -31,6 +31,10 @@
     <string name="models_installing">Installing…</string>
     <string name="models_failed">Download failed</string>
     <string name="models_download">Download</string>
+    <string name="transcription_channel">Transcription</string>
+    <string name="transcription_running">Transcribing</string>
+    <string name="transcribe">Transcribe</string>
+    <string name="transcribe_no_model">Download a speech model first</string>
 
     <!-- Player -->
     <string name="player_waveform">Playback position</string>
