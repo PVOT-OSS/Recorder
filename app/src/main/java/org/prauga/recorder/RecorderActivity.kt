@@ -5,19 +5,13 @@
 
 package org.prauga.recorder
 
-import android.content.ComponentName
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.ServiceConnection
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
-import android.os.IBinder
 import android.os.Looper
-import android.os.Message
-import android.os.Messenger
-import android.os.RemoteException
 import android.provider.MediaStore
 import android.text.format.DateUtils
 import android.view.View
@@ -42,7 +36,7 @@ import java.util.Locale
 import kotlin.reflect.safeCast
 import kotlinx.coroutines.launch
 import org.prauga.recorder.models.UiStatus
-import org.prauga.recorder.service.SoundRecorderService
+import org.prauga.recorder.service.RecorderConnection
 import org.prauga.recorder.ui.WaveFormView
 import org.prauga.recorder.utils.LocationHelper
 import org.prauga.recorder.utils.OnBoardingHelper
@@ -83,45 +77,19 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
 
     private var uiStatus = UiStatus.READY
 
-    private val messenger =
-        Messenger(
-            object : Handler(Looper.getMainLooper()) {
-                override fun handleMessage(msg: Message) {
-                    when (msg.what) {
-                        SoundRecorderService.MSG_UI_STATUS -> setStatus(msg.obj as UiStatus)
-                        SoundRecorderService.MSG_SOUND_AMPLITUDE ->
-                            setVisualizerAmplitude(msg.obj as Int)
-                        SoundRecorderService.MSG_TIME_ELAPSED -> setElapsedTime(msg.obj as Long)
-                        SoundRecorderService.MSG_TRANSCRIPT -> setLiveTranscript(msg.obj as String)
-                        else -> super.handleMessage(msg)
-                    }
-                }
-            }
+    private val connection =
+        RecorderConnection(
+            this,
+            object : RecorderConnection.Listener {
+                override fun onStatus(status: UiStatus) = setStatus(status)
+
+                override fun onAmplitude(amplitude: Int) = setVisualizerAmplitude(amplitude)
+
+                override fun onElapsedTime(seconds: Long) = setElapsedTime(seconds)
+
+                override fun onTranscript(text: String) = setLiveTranscript(text)
+            },
         )
-
-    private val serviceConnection =
-        object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName, service: IBinder) {
-                val messengerService = Messenger(service)
-                this@RecorderActivity.service = messengerService
-                try {
-                    val msg = Message.obtain(null, SoundRecorderService.MSG_REGISTER_CLIENT)
-                    msg.replyTo = messenger
-                    messengerService.send(msg)
-                } catch (e: RemoteException) {
-                    // In this case the service has crashed before we could even
-                    // do anything with it; we can count on soon being
-                    // disconnected (and then reconnected if it can be restarted)
-                    // so there is no need to do anything here.
-                }
-            }
-
-            override fun onServiceDisconnected(name: ComponentName) {
-                service = null
-            }
-        }
-    private var service: Messenger? = null
-    private var isServiceBound = false
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -154,15 +122,10 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
             startActivity(Intent(this, OnboardingActivity::class.java))
         }
 
-        doBindService()
+        lifecycle.addObserver(connection)
 
         OnBoardingHelper.onBoardList(this, openSoundListImageView)
         OnBoardingHelper.onBoardSettings(this, settingsImageView)
-    }
-
-    public override fun onDestroy() {
-        doUnbindService()
-        super.onDestroy()
     }
 
     override fun onRequestPermissionsResult(
@@ -184,7 +147,7 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         pendingAction = intent.action
-        if (service != null) applyPendingAction()
+        if (connection.isConnected) applyPendingAction()
     }
 
     /** START/STOP from the tile, widget, shortcut or automation apps, applied once connected. */
@@ -234,39 +197,14 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
         }
 
         if (uiStatus == UiStatus.READY) {
-            // Start
-            startService(
-                Intent(this, SoundRecorderService::class.java)
-                    .setAction(SoundRecorderService.ACTION_START)
-                    .putExtra(SoundRecorderService.EXTRA_FILE_NAME, newRecordFileName)
-            )
+            connection.start(newRecordFileName)
         } else {
-            // Stop
-            startService(
-                Intent(this, SoundRecorderService::class.java)
-                    .setAction(SoundRecorderService.ACTION_STOP)
-            )
+            connection.stop()
             hasRecordedAudio = true
         }
     }
 
-    private fun togglePause() {
-        when (uiStatus) {
-            UiStatus.RECORDING ->
-                startService(
-                    Intent(this, SoundRecorderService::class.java)
-                        .setAction(SoundRecorderService.ACTION_PAUSE)
-                )
-
-            UiStatus.PAUSED ->
-                startService(
-                    Intent(this, SoundRecorderService::class.java)
-                        .setAction(SoundRecorderService.ACTION_RESUME)
-                )
-
-            UiStatus.READY -> {}
-        }
-    }
+    private fun togglePause() = connection.togglePause()
 
     private fun applyUiStatus(status: UiStatus) {
         uiStatus = status
@@ -299,33 +237,6 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
             pauseResumeImageView.tooltipText = pauseResumeImageView.contentDescription
             pauseResumeImageView.setImageDrawable(prDrawable)
             AnimatedVectorDrawable::class.safeCast(prDrawable)?.start()
-        }
-    }
-
-    private fun doBindService() {
-        bindService(
-            Intent(this, SoundRecorderService::class.java),
-            serviceConnection,
-            BIND_AUTO_CREATE,
-        )
-        isServiceBound = true
-    }
-
-    private fun doUnbindService() {
-        service?.let {
-            try {
-                val msg = Message.obtain(null, SoundRecorderService.MSG_UNREGISTER_CLIENT)
-                msg.replyTo = messenger
-                it.send(msg)
-            } catch (e: RemoteException) {
-                // There is nothing special we need to do if the service
-                // has crashed.
-            }
-        }
-
-        if (isServiceBound) {
-            unbindService(serviceConnection)
-            isServiceBound = false
         }
     }
 
