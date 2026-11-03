@@ -256,6 +256,15 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
             else activity.getString(R.string.transcript_matches, match + 1, matches.size)
     }
 
+    private fun renameSpeaker(speaker: Int) {
+        val recording = recording ?: return
+        RenameDialog.show(activity, speakerName(speaker).orEmpty()) { name ->
+            activity.lifecycleScope.launch(Dispatchers.IO) {
+                db.renameSpeaker(recording.id, speaker, name)
+            }
+        }
+    }
+
     private fun edit(segment: Segment) {
         val recording = recording ?: return
         val input = TextInputEditText(activity).apply { setText(segment.text) }
@@ -344,6 +353,12 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
                     edit(segment)
                     true
                 }
+                header.setOnClickListener(
+                    if (segment.speaker >= 0)
+                        View.OnClickListener { renameSpeaker(segment.speaker) }
+                    else null
+                )
+                header.isClickable = segment.speaker >= 0
             }
         }
     }
