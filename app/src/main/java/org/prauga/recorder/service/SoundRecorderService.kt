@@ -18,6 +18,7 @@ import android.content.pm.PackageManager
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.net.Uri
+import android.os.BatteryManager
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
@@ -26,6 +27,7 @@ import android.os.IBinder.DeathRecipient
 import android.os.Looper
 import android.os.Message
 import android.os.Messenger
+import android.os.PowerManager
 import android.os.RemoteException
 import android.text.format.DateUtils
 import android.util.Log
@@ -264,6 +266,43 @@ class SoundRecorderService : LifecycleService() {
             }
     }
 
+    /** Why recording must stop now (low storage/battery, overheating), or null. */
+    private fun guardReason(): Int? {
+        recordFile?.parentFile?.let {
+            if (it.usableSpace < MIN_FREE_BYTES) return R.string.guard_storage
+        }
+        val battery = getSystemService(BatteryManager::class.java)
+        if (
+            !battery.isCharging &&
+                battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) in
+                    0..MIN_BATTERY_PERCENT
+        ) {
+            return R.string.guard_battery
+        }
+        if (
+            getSystemService(PowerManager::class.java).currentThermalStatus >=
+                PowerManager.THERMAL_STATUS_CRITICAL
+        ) {
+            return R.string.guard_thermal
+        }
+        return null
+    }
+
+    private fun stopForGuard(reason: Int) {
+        if (recorder == null) return
+        Log.w(TAG, "Stopping: ${getString(reason)}")
+        stopRecording()
+        notificationManager.notify(
+            GUARD_NOTIFICATION_ID,
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
+                .setSmallIcon(R.drawable.ic_mic)
+                .setContentTitle(getString(R.string.guard_title))
+                .setContentText(getString(reason))
+                .setAutoCancel(true)
+                .build(),
+        )
+    }
+
     private fun saveLocation(uri: String, title: String) {
         val location = recordLocation ?: return
         recordLocation = null
@@ -389,6 +428,10 @@ class SoundRecorderService : LifecycleService() {
                 scheduleAtFixedRate(
                     object : TimerTask() {
                         override fun run() {
+                            guardReason()?.let { reason ->
+                                handler.post { stopForGuard(reason) }
+                                return
+                            }
                             val newElapsedTime = ++elapsedTime
                             notifyElapsedTime(newElapsedTime)
                             val notification = createRecordingNotification(newElapsedTime)
@@ -657,6 +700,9 @@ class SoundRecorderService : LifecycleService() {
         private const val LEGACY_MUSIC_DIR = "Sound records"
 
         const val NOTIFICATION_ID = 60
+        private const val GUARD_NOTIFICATION_ID = 61
+        private const val MIN_FREE_BYTES = 50L * 1024 * 1024
+        private const val MIN_BATTERY_PERCENT = 3
         private const val NOTIFICATION_CHANNEL = "soundrecorder_notification_channel"
     }
 }
