@@ -318,6 +318,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
         val hasTranscript = transcriptPane.hasTranscript
         menu.findItem(R.id.action_search_transcript)?.isVisible = hasTranscript
         menu.findItem(R.id.action_export_transcript)?.isVisible = hasTranscript
+        menu.findItem(R.id.action_summary)?.isVisible = hasTranscript
         menu.findItem(R.id.action_transcribe)?.isVisible = recording != null
         menu.findItem(R.id.action_favourite)?.apply {
             setIcon(if (favourite) R.drawable.ic_star else R.drawable.ic_star_border)
@@ -356,6 +357,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
             R.id.action_search_transcript -> transcriptPane.showSearch(true)
             R.id.action_export_transcript -> exportTranscript(recording)
             R.id.action_clip -> createClip(recording)
+            R.id.action_summary -> showSummary()
             R.id.action_edit -> setEditMode(!waveformView.selectionEnabled)
             R.id.action_share ->
                 startActivity(RecordIntentHelper.getShareIntent(recording.uri, recording.mimeType))
@@ -388,6 +390,24 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
             else -> return onExtraMenuItem(item) || super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun showSummary() {
+        val moments = Keywords.summary(transcriptPane.transcript)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.transcript_summary)
+            .setItems(
+                moments
+                    .map { s ->
+                        listOfNotNull(format(s.startMs), transcriptPane.speakerName(s.speaker))
+                            .joinToString(" · ") + "\n" + s.text
+                    }
+                    .toTypedArray()
+            ) { _, which ->
+                seekTo(moments[which].startMs)
+            }
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun createClip(recording: Recording) {

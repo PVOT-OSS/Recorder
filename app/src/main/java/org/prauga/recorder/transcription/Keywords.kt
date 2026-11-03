@@ -40,6 +40,32 @@ object Keywords {
             .map { it.key }
     }
 
+    /**
+     * Extractive summary: the [count] segments carrying the most keyword weight (normalised by
+     * length so long rambles don't win), returned in recording order.
+     */
+    fun summary(segments: List<Segment>, count: Int = 3): List<Segment> {
+        if (segments.size <= count) return segments
+        val weights = HashMap<String, Int>()
+        val tokens =
+            segments.map { s ->
+                s.text.lowercase().split(Regex("[^\\p{L}\\p{N}']+")).filter {
+                    it.length >= MIN_LENGTH && it !in STOPWORDS
+                }
+            }
+        tokens.flatten().forEach { weights[it] = (weights[it] ?: 0) + 1 }
+        return segments.indices
+            .sortedByDescending { i ->
+                val words = tokens[i]
+                if (words.isEmpty()) 0.0
+                else
+                    words.sumOf { (weights[it] ?: 0).toDouble() } / Math.sqrt(words.size.toDouble())
+            }
+            .take(count)
+            .sorted()
+            .map { segments[it] }
+    }
+
     /** A few title ideas from the keywords (and place, if known). */
     fun suggestTitles(segments: List<Segment>, place: String?): List<String> {
         val keywords = extract(segments, 3).map { it.replaceFirstChar(Char::titlecase) }
