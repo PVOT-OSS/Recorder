@@ -3,14 +3,17 @@
      SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
      SPDX-License-Identifier: Apache-2.0
 -->
+<!-- RemoteViews are inflated without AppCompat, so android:tint is the right attribute here -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:gravity="center"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:padding="8dp"
+    tools:ignore="UseAppTint">
 
     <ImageButton
         android:id="@+id/widgetRecordButton"
