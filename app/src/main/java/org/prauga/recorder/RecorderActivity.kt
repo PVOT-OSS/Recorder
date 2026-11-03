@@ -5,12 +5,9 @@
 
 package org.prauga.recorder
 
-import android.content.BroadcastReceiver
 import android.content.ComponentName
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
@@ -22,7 +19,6 @@ import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
 import android.provider.MediaStore
-import android.telephony.TelephonyManager
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.ImageView
@@ -83,18 +79,6 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     private var hasRecordedAudio = false
 
     private var uiStatus = UiStatus.READY
-
-    private val telephonyReceiver =
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                if (TelephonyManager.ACTION_PHONE_STATE_CHANGED == intent.action) {
-                    val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
-                    if (TelephonyManager.EXTRA_STATE_OFFHOOK == state) {
-                        togglePause()
-                    }
-                }
-            }
-        }
 
     private val messenger =
         Messenger(
@@ -169,23 +153,6 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     public override fun onDestroy() {
         doUnbindService()
         super.onDestroy()
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        ContextCompat.registerReceiver(
-            this,
-            telephonyReceiver,
-            IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED),
-            ContextCompat.RECEIVER_NOT_EXPORTED,
-        )
-    }
-
-    override fun onStop() {
-        unregisterReceiver(telephonyReceiver)
-
-        super.onStop()
     }
 
     override fun onRequestPermissionsResult(

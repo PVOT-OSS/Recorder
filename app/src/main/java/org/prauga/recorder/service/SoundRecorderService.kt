@@ -85,6 +85,26 @@ class SoundRecorderService : LifecycleService() {
     private var isPaused = false
     private var elapsedTime = 0L
 
+    private val audioManager by lazy { getSystemService(AudioManager::class.java) }
+    private var pausedForCall = false
+
+    /** Pause while a call holds the audio path; resume if we were the ones who paused. */
+    private val modeListener =
+        AudioManager.OnModeChangedListener { mode ->
+            val inCall =
+                mode == AudioManager.MODE_IN_CALL ||
+                    mode == AudioManager.MODE_IN_COMMUNICATION ||
+                    mode == AudioManager.MODE_CALL_SCREENING ||
+                    mode == AudioManager.MODE_CALL_REDIRECT ||
+                    mode == AudioManager.MODE_COMMUNICATION_REDIRECT
+            if (inCall && recorder != null && !isPaused) {
+                if (pauseRecording()) pausedForCall = true
+            } else if (!inCall && pausedForCall) {
+                pausedForCall = false
+                resumeRecording()
+            }
+        }
+
     private val shutdownReceiver: BroadcastReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -108,6 +128,8 @@ class SoundRecorderService : LifecycleService() {
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
 
+        audioManager.addOnModeChangedListener(mainExecutor, modeListener)
+
         if (notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL) == null) {
             createNotificationChannel()
         }
@@ -115,6 +137,7 @@ class SoundRecorderService : LifecycleService() {
 
     override fun onDestroy() {
         unregisterReceiver(shutdownReceiver)
+        audioManager.removeOnModeChangedListener(modeListener)
 
         stopTimers()
 
@@ -173,6 +196,7 @@ class SoundRecorderService : LifecycleService() {
             recordLocation = locationHelper.currentLocation
 
             isPaused = false
+            pausedForCall = false
             elapsedTime = 0
             try {
                 recorder.startRecording(file)
