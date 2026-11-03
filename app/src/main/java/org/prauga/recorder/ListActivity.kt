@@ -41,6 +41,7 @@ import org.prauga.recorder.list.RecordingItemDetailsLookup
 import org.prauga.recorder.list.RecordingsAdapter
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.repository.RecordingsRepository
+import org.prauga.recorder.ui.LabelsDialog
 import org.prauga.recorder.ui.RenameDialog
 import org.prauga.recorder.utils.RecordIntentHelper
 import org.prauga.recorder.viewmodels.RecordingsViewModel
@@ -75,6 +76,14 @@ class ListActivity : AppCompatActivity() {
 
             override fun onRename(recording: Recording) {
                 this@ListActivity.onRename(recording)
+            }
+
+            override fun onEditLabels(recording: Recording) {
+                LabelsDialog.show(this@ListActivity, recording.labels, model.labels.value) {
+                    lifecycleScope.launch {
+                        RecordingsRepository.setLabels(this@ListActivity, recording, it)
+                    }
+                }
             }
 
             override fun onToggleFavourite(recording: Recording) {

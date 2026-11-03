@@ -195,6 +195,11 @@ class RecordingsAdapter(
                     true
                 }
 
+                R.id.action_labels -> {
+                    callbacks.onEditLabels(recording)
+                    true
+                }
+
                 R.id.action_share -> {
                     callbacks.onShare(recording)
                     true

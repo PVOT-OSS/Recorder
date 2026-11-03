@@ -16,6 +16,13 @@
 
     <item
         style="@style/AppTheme.MenuItem"
+        android:id="@+id/action_labels"
+        android:title="@string/labels"
+        android:icon="@drawable/ic_label"
+        app:showAsAction="ifRoom" />
+
+    <item
+        style="@style/AppTheme.MenuItem"
         android:id="@+id/action_share"
         android:title="@string/share"
         android:icon="@drawable/ic_share"

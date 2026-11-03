@@ -47,6 +47,7 @@ import org.prauga.recorder.audio.WaveformExtractor
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.playback.PlaybackService
 import org.prauga.recorder.repository.RecordingsRepository
+import org.prauga.recorder.ui.LabelsDialog
 import org.prauga.recorder.ui.PlaybackWaveformView
 import org.prauga.recorder.ui.RenameDialog
 import org.prauga.recorder.utils.PreferencesManager
@@ -325,6 +326,19 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
                         !recording.favourite,
                     )
                     bind(recording.copy(favourite = !recording.favourite))
+                }
+            R.id.action_labels ->
+                lifecycleScope.launch {
+                    val known =
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            RecordingsRepository.knownLabels(this@PlayerActivity)
+                        }
+                    LabelsDialog.show(this@PlayerActivity, recording.labels, known) { labels ->
+                        lifecycleScope.launch {
+                            RecordingsRepository.setLabels(this@PlayerActivity, recording, labels)
+                            bind(recording.copy(labels = labels))
+                        }
+                    }
                 }
             R.id.action_edit -> setEditMode(!waveformView.selectionEnabled)
             R.id.action_share ->

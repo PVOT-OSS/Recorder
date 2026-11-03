@@ -31,6 +31,12 @@
     <string name="filter_favourites">Favourites</string>
     <string name="list_no_results">No recordings match</string>
 
+    <!-- Labels -->
+    <string name="labels">Labels</string>
+    <string name="labels_title">Labels</string>
+    <string name="labels_new">New label</string>
+    <string name="labels_save">Save</string>
+
     <!-- Rename -->
     <string name="rename_suggest">Suggest</string>
 

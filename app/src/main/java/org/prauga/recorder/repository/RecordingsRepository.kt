@@ -88,6 +88,17 @@ object RecordingsRepository {
             }
         }
 
+    suspend fun setLabels(context: Context, recording: Recording, labels: List<String>) =
+        withContext(Dispatchers.IO) {
+            RecordingsDatabase.get(context).let {
+                it.upsert(it.metadata(recording.id).copy(labels = labels))
+                it.reindex(recording.id, recording.title)
+            }
+        }
+
+    fun knownLabels(context: Context): List<String> =
+        RecordingsDatabase.get(context).metadata().values.flatMap { it.labels }.distinct()
+
     private fun sync(db: RecordingsDatabase, list: List<Recording>) {
         db.retainOnly(list.map { it.id }.toSet())
         val indexed = db.indexedIds()

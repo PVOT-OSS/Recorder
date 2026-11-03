@@ -24,6 +24,9 @@
         app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_labels"
+        android:title="@string/labels" />
+    <item
         android:id="@+id/action_rename"
         android:title="@string/rename" />
     <item

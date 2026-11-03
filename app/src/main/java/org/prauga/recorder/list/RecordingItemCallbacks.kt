@@ -17,4 +17,6 @@ interface RecordingItemCallbacks {
     fun onRename(recording: Recording)
 
     fun onToggleFavourite(recording: Recording)
+
+    fun onEditLabels(recording: Recording)
 }
