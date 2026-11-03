@@ -52,7 +52,9 @@ class ListActivity : AppCompatActivity() {
     // Views
     private val contentView by lazy { findViewById<View>(android.R.id.content) }
     private val listEmptyTextView by lazy { findViewById<TextView>(R.id.listEmptyTextView) }
-    private val listLoadingProgressBar by lazy { findViewById<ProgressBar>(R.id.listLoadingProgressBar) }
+    private val listLoadingProgressBar by lazy {
+        findViewById<ProgressBar>(R.id.listLoadingProgressBar)
+    }
     private val listRecyclerView by lazy { findViewById<RecyclerView>(R.id.listRecyclerView) }
     private val toolbar by lazy { findViewById<Toolbar>(R.id.toolbar) }
 
@@ -60,23 +62,24 @@ class ListActivity : AppCompatActivity() {
     private val inputMethodManager by lazy { getSystemService(InputMethodManager::class.java) }
 
     // Adapters
-    private val recordingItemCallbacks = object : RecordingItemCallbacks {
-        override fun onPlay(recording: Recording) {
-            this@ListActivity.onPlay(recording)
-        }
+    private val recordingItemCallbacks =
+        object : RecordingItemCallbacks {
+            override fun onPlay(recording: Recording) {
+                this@ListActivity.onPlay(recording)
+            }
 
-        override fun onShare(recording: Recording) {
-            this@ListActivity.onShare(recording)
-        }
+            override fun onShare(recording: Recording) {
+                this@ListActivity.onShare(recording)
+            }
 
-        override fun onDelete(recording: Recording) {
-            this@ListActivity.onDelete(recording)
-        }
+            override fun onDelete(recording: Recording) {
+                this@ListActivity.onDelete(recording)
+            }
 
-        override fun onRename(recording: Recording) {
-            this@ListActivity.onRename(recording)
+            override fun onRename(recording: Recording) {
+                this@ListActivity.onRename(recording)
+            }
         }
-    }
     private val recordingsAdapter by lazy { RecordingsAdapter(model, recordingItemCallbacks) }
 
     // Selection
@@ -105,53 +108,54 @@ class ListActivity : AppCompatActivity() {
 
     private var actionMode: ActionMode? = null
 
-    private val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-            menuInflater.inflate(
-                R.menu.menu_list_action_mode,
-                menu
-            )
-            return true
-        }
+    private val actionModeCallback =
+        object : ActionMode.Callback {
+            override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+                menuInflater.inflate(R.menu.menu_list_action_mode, menu)
+                return true
+            }
 
-        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) = false
+            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) = false
 
-        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) =
-            selectionTracker?.selection?.toList()?.toTypedArray()?.takeUnless {
-                it.isEmpty()
-            }?.let { selection ->
-                when (item?.itemId) {
-                    R.id.deleteForever -> {
-                        MaterialAlertDialogBuilder(this@ListActivity)
-                            .setTitle(R.string.delete_selected_title)
-                            .setMessage(getString(R.string.delete_selected_message))
-                            .setPositiveButton(R.string.delete) { _: DialogInterface?, _: Int ->
-                                lifecycleScope.launch {
-                                    model.deleteRecordings(*selection)
-                                }
+            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) =
+                selectionTracker
+                    ?.selection
+                    ?.toList()
+                    ?.toTypedArray()
+                    ?.takeUnless { it.isEmpty() }
+                    ?.let { selection ->
+                        when (item?.itemId) {
+                            R.id.deleteForever -> {
+                                MaterialAlertDialogBuilder(this@ListActivity)
+                                    .setTitle(R.string.delete_selected_title)
+                                    .setMessage(getString(R.string.delete_selected_message))
+                                    .setPositiveButton(R.string.delete) {
+                                        _: DialogInterface?,
+                                        _: Int ->
+                                        lifecycleScope.launch { model.deleteRecordings(*selection) }
+                                    }
+                                    .setNegativeButton(R.string.cancel, null)
+                                    .show()
+
+                                true
                             }
-                            .setNegativeButton(R.string.cancel, null)
-                            .show()
 
-                        true
-                    }
+                            R.id.share -> {
+                                val uris = selection.map { it.uri }
 
-                    R.id.share -> {
-                        val uris = selection.map { it.uri }
+                                startActivity(RecordIntentHelper.getShareIntents(uris, TYPE_AUDIO))
 
-                        startActivity(RecordIntentHelper.getShareIntents(uris, TYPE_AUDIO))
+                                true
+                            }
 
-                        true
-                    }
+                            else -> false
+                        }
+                    } ?: false
 
-                    else -> false
-                }
-            } ?: false
-
-        override fun onDestroyActionMode(mode: ActionMode?) {
-            selectionTracker?.clearSelection()
+            override fun onDestroyActionMode(mode: ActionMode?) {
+                selectionTracker?.clearSelection()
+            }
         }
-    }
 
     private val inSelectionModeObserver = Observer { inSelectionMode: Boolean ->
         if (inSelectionMode) {
@@ -190,18 +194,20 @@ class ListActivity : AppCompatActivity() {
             windowInsets
         }
 
-        selectionTracker = SelectionTracker.Builder(
-            "recordings",
-            listRecyclerView,
-            recordingsAdapter.itemKeyProvider,
-            RecordingItemDetailsLookup(listRecyclerView),
-            StorageStrategy.createParcelableStorage(Recording::class.java),
-        ).withSelectionPredicate(
-            SelectionPredicates.createSelectAnything()
-        ).build().also {
-            recordingsAdapter.selectionTracker = it
-            it.addObserver(selectionTrackerObserver)
-        }
+        selectionTracker =
+            SelectionTracker.Builder(
+                    "recordings",
+                    listRecyclerView,
+                    recordingsAdapter.itemKeyProvider,
+                    RecordingItemDetailsLookup(listRecyclerView),
+                    StorageStrategy.createParcelableStorage(Recording::class.java),
+                )
+                .withSelectionPredicate(SelectionPredicates.createSelectAnything())
+                .build()
+                .also {
+                    recordingsAdapter.selectionTracker = it
+                    it.addObserver(selectionTrackerObserver)
+                }
 
         model.inSelectionMode.observe(this, inSelectionModeObserver)
 
@@ -235,9 +241,7 @@ class ListActivity : AppCompatActivity() {
             .setTitle(R.string.delete_title)
             .setMessage(R.string.delete_recording_message)
             .setPositiveButton(R.string.delete) { _: DialogInterface?, _: Int ->
-                lifecycleScope.launch {
-                    model.deleteRecordings(recording)
-                }
+                lifecycleScope.launch { model.deleteRecordings(recording) }
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
@@ -248,49 +252,47 @@ class ListActivity : AppCompatActivity() {
         lateinit var editText: EditText
 
         val onConfirm = {
-            editText.text?.takeIf { it.isNotEmpty() }?.let { editable ->
-                lifecycleScope.launch {
-                    model.renameRecording(recording, editable.toString())
-                }
+            editText.text
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { editable ->
+                    lifecycleScope.launch { model.renameRecording(recording, editable.toString()) }
 
-                true
-            } ?: false
+                    true
+                } ?: false
         }
 
-        val view = layoutInflater.inflate(
-            R.layout.dialog_content_rename,
-            null,
-            false
-        )
-        editText = view.findViewById<EditText>(R.id.nameEditText).apply {
-            setText(recording.title)
-            setSelection(0, recording.title.length)
-            setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_UNSPECIFIED,
-                    EditorInfo.IME_ACTION_DONE -> {
-                        onConfirm().also {
-                            if (it) {
-                                alertDialog.dismiss()
+        val view = layoutInflater.inflate(R.layout.dialog_content_rename, null, false)
+        editText =
+            view.findViewById<EditText>(R.id.nameEditText).apply {
+                setText(recording.title)
+                setSelection(0, recording.title.length)
+                setOnEditorActionListener { _, actionId, _ ->
+                    when (actionId) {
+                        EditorInfo.IME_ACTION_UNSPECIFIED,
+                        EditorInfo.IME_ACTION_DONE -> {
+                            onConfirm().also {
+                                if (it) {
+                                    alertDialog.dismiss()
+                                }
                             }
                         }
-                    }
 
-                    else -> false
+                        else -> false
+                    }
                 }
             }
-        }
 
-        alertDialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.list_edit_title)
-            .setView(view)
-            .setPositiveButton(R.string.list_edit_confirm) { _, _ -> onConfirm() }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-            .also {
-                editText.requestFocus()
-                inputMethodManager.scheduleShowSoftInput(editText, 0)
-            }
+        alertDialog =
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.list_edit_title)
+                .setView(view)
+                .setPositiveButton(R.string.list_edit_confirm) { _, _ -> onConfirm() }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+                .also {
+                    editText.requestFocus()
+                    inputMethodManager.scheduleShowSoftInput(editText, 0)
+                }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -307,32 +309,32 @@ class ListActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.action_delete_all -> {
-            promptDeleteAllRecordings()
-            true
-        }
+    override fun onOptionsItemSelected(item: MenuItem) =
+        when (item.itemId) {
+            R.id.action_delete_all -> {
+                promptDeleteAllRecordings()
+                true
+            }
 
-        else -> false
-    }
+            else -> false
+        }
 
     private fun updateSelection() {
         model.inSelectionMode.value = selectionTracker?.hasSelection() == true
 
-        selectionTracker?.selection?.count()?.takeIf { it > 0 }?.let {
-            startSelectionMode().apply {
-                title = resources.getQuantityString(
-                    R.plurals.recording_selection_count, it, it
-                )
+        selectionTracker
+            ?.selection
+            ?.count()
+            ?.takeIf { it > 0 }
+            ?.let {
+                startSelectionMode().apply {
+                    title = resources.getQuantityString(R.plurals.recording_selection_count, it, it)
+                }
             }
-        }
     }
 
-    private fun startSelectionMode() = actionMode ?: toolbar.startActionMode(
-        actionModeCallback
-    ).also {
-        actionMode = it
-    }
+    private fun startSelectionMode() =
+        actionMode ?: toolbar.startActionMode(actionModeCallback).also { actionMode = it }
 
     private fun endSelectionMode() {
         actionMode?.finish()

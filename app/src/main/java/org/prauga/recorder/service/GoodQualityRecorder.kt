@@ -19,57 +19,61 @@ class GoodQualityRecorder(private val context: Context) : SoundRecording {
     @RequiresPermission(permission.RECORD_AUDIO)
     @Throws(IOException::class)
     override fun startRecording(file: File) {
-        recorder = MediaRecorder(context).apply {
-            setOutputFile(file)
-            setAudioSource(MediaRecorder.AudioSource.DEFAULT)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            prepare()
-            start()
-        }
+        recorder =
+            MediaRecorder(context).apply {
+                setOutputFile(file)
+                setAudioSource(MediaRecorder.AudioSource.DEFAULT)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                prepare()
+                start()
+            }
     }
 
-    override fun stopRecording() = recorder?.let {
-        if (isPaused) {
-            isPaused = false
+    override fun stopRecording() =
+        recorder?.let {
+            if (isPaused) {
+                isPaused = false
+                it.resume()
+            }
+
+            // needed to prevent app crash when starting and stopping too fast
+            try {
+                it.stop()
+            } catch (rte: RuntimeException) {
+                return false
+            } finally {
+                it.release()
+            }
+
+            return true
+        } ?: false
+
+    override fun pauseRecording() =
+        recorder?.let {
+            if (isPaused) {
+                return false
+            }
+
+            isPaused = true
+
+            it.pause()
+
+            true
+        } ?: false
+
+    override fun resumeRecording() =
+        recorder?.let {
+            if (!isPaused) {
+                return false
+            }
+
             it.resume()
-        }
 
-        // needed to prevent app crash when starting and stopping too fast
-        try {
-            it.stop()
-        } catch (rte: RuntimeException) {
-            return false
-        } finally {
-            it.release()
-        }
+            isPaused = false
 
-        return true
-    } ?: false
-
-    override fun pauseRecording() = recorder?.let {
-        if (isPaused) {
-            return false
-        }
-
-        isPaused = true
-
-        it.pause()
-
-        true
-    } ?: false
-
-    override fun resumeRecording() = recorder?.let {
-        if (!isPaused) {
-            return false
-        }
-
-        it.resume()
-
-        isPaused = false
-
-        true
-    } ?: false
+            true
+        } ?: false
 
     override val currentAmplitude: Int
         get() = recorder?.maxAmplitude ?: 0

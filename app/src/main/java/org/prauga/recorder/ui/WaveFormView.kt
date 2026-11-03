@@ -14,15 +14,14 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorInt
 import com.google.android.material.color.MaterialColors
-import org.prauga.recorder.R
 import kotlin.math.pow
 import kotlin.math.sin
+import org.prauga.recorder.R
 
-class WaveFormView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+class WaveFormView
+@JvmOverloads
+constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
+    View(context, attrs, defStyleAttr) {
     private val maxAudioValue: Float
     private val numOfWaves: Int
     private val density: Float
@@ -30,8 +29,7 @@ class WaveFormView @JvmOverloads constructor(
     private val frequency: Float
     private val phaseShift: Float
 
-    @ColorInt
-    private val wavesColor: Int
+    @ColorInt private val wavesColor: Int
     private val paint: Paint
     private val path = Path()
     private val ampLock = Any()
@@ -39,46 +37,25 @@ class WaveFormView @JvmOverloads constructor(
     private var phase = 0f
 
     init {
-        val ta = context.resources.obtainAttributes(
-            attrs,
-            R.styleable.WaveFormView
-        )
+        val ta = context.resources.obtainAttributes(attrs, R.styleable.WaveFormView)
 
-        maxAudioValue = ta.getInt(
-            R.styleable.WaveFormView_maxAudioValue,
-            DEFAULT_MAX_AUDIO_VALUE
-        ).toFloat()
+        maxAudioValue =
+            ta.getInt(R.styleable.WaveFormView_maxAudioValue, DEFAULT_MAX_AUDIO_VALUE).toFloat()
 
-        numOfWaves = ta.getInt(
-            R.styleable.WaveFormView_numOfWaves,
-            DEFAULT_NUMBER_OF_WAVES
-        )
+        numOfWaves = ta.getInt(R.styleable.WaveFormView_numOfWaves, DEFAULT_NUMBER_OF_WAVES)
 
-        density = ta.getFloat(
-            R.styleable.WaveFormView_density,
-            DEFAULT_DENSITY
-        )
+        density = ta.getFloat(R.styleable.WaveFormView_density, DEFAULT_DENSITY)
 
-        amplitude = ta.getFloat(
-            R.styleable.WaveFormView_defaultAmplitude,
-            DEFAULT_AMPLITUDE
-        )
+        amplitude = ta.getFloat(R.styleable.WaveFormView_defaultAmplitude, DEFAULT_AMPLITUDE)
 
         idleAmplitude = amplitude
 
-        frequency = ta.getFloat(
-            R.styleable.WaveFormView_defaultFrequency,
-            DEFAULT_FREQUENCY
-        )
+        frequency = ta.getFloat(R.styleable.WaveFormView_defaultFrequency, DEFAULT_FREQUENCY)
 
-        phaseShift = ta.getFloat(
-            R.styleable.WaveFormView_defaultPhaseShift,
-            DEFAULT_PHASE_SHIFT
-        )
+        phaseShift = ta.getFloat(R.styleable.WaveFormView_defaultPhaseShift, DEFAULT_PHASE_SHIFT)
 
-        wavesColor = MaterialColors.getColor(
-            this, com.google.android.material.R.attr.colorSecondary
-        )
+        wavesColor =
+            MaterialColors.getColor(this, com.google.android.material.R.attr.colorSecondary)
 
         paint = Paint()
         paint.color = wavesColor
@@ -108,12 +85,13 @@ class WaveFormView @JvmOverloads constructor(
             path.reset()
             var x = 0f
             while (x < width + density) {
-                val scale =
-                    -(1 / halfWidth * (x - halfWidth)).toDouble().pow(2.0).toFloat() + 1f
-                val y = halfHeight + scale *
-                        maxAmplitude *
-                        normalizedAmplitude * sin(2 * Math.PI * (x / width) * frequency + phase)
-                    .toFloat()
+                val scale = -(1 / halfWidth * (x - halfWidth)).toDouble().pow(2.0).toFloat() + 1f
+                val y =
+                    halfHeight +
+                        scale *
+                            maxAmplitude *
+                            normalizedAmplitude *
+                            sin(2 * Math.PI * (x / width) * frequency + phase).toFloat()
                 if (x == 0f) {
                     path.moveTo(x, y)
                 } else {
@@ -131,8 +109,7 @@ class WaveFormView @JvmOverloads constructor(
 
     fun setAmplitude(amplitude: Int) {
         synchronized(ampLock) {
-            this.amplitude =
-                (amplitude / maxAudioValue).coerceAtMost(idleAmplitude)
+            this.amplitude = (amplitude / maxAudioValue).coerceAtMost(idleAmplitude)
         }
     }
 

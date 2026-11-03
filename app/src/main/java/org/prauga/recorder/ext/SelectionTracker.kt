@@ -10,9 +10,9 @@ import androidx.recyclerview.selection.SelectionTracker
 
 /**
  * Get the current election.
+ *
  * @see SelectionTracker.getSelection
  * @see SelectionTracker.copySelection
  */
-fun <T> SelectionTracker<T>.getCurrentSelection() = MutableSelection<T>().apply {
-    copySelection(this)
-}
+fun <T> SelectionTracker<T>.getCurrentSelection() =
+    MutableSelection<T>().apply { copySelection(this) }

@@ -10,6 +10,4 @@ plugins {
     id("org.lineageos.generatebp") version "+" apply false
 }
 
-tasks.register<Delete>("clean").configure {
-    delete(rootProject.layout.buildDirectory)
-}
+tasks.register<Delete>("clean").configure { delete(rootProject.layout.buildDirectory) }

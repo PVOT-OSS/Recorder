@@ -11,9 +11,7 @@ import org.prauga.recorder.service.SoundRecorderService
 
 object Utils {
     fun cancelShareNotification(context: Context) {
-        val nm = context.getSystemService(
-            NotificationManager::class.java
-        ) ?: return
+        val nm = context.getSystemService(NotificationManager::class.java) ?: return
         nm.cancel(SoundRecorderService.NOTIFICATION_ID)
     }
 }

@@ -27,11 +27,12 @@ class DialogActivity : AppCompatActivity() {
 
         setFinishOnTouchOutside(true)
 
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.settings_title)
-            .setView(R.layout.dialog_content_settings)
-            .setOnDismissListener { finish() }
-            .show()
+        val dialog =
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.settings_title)
+                .setView(R.layout.dialog_content_settings)
+                .setOnDismissListener { finish() }
+                .show()
 
         val isRecording = intent.getBooleanExtra(EXTRA_IS_RECORDING, false)
         locationSwitch = dialog.findViewById(R.id.locationSwitch)!!
@@ -58,21 +59,19 @@ class DialogActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupLocationSwitch(
-        locationSwitch: MaterialSwitch,
-        isRecording: Boolean
-    ) {
-        val tagWithLocation = if (preferences.tagWithLocation) {
-            if (permissionManager.hasLocationPermission()) {
-                true
+    private fun setupLocationSwitch(locationSwitch: MaterialSwitch, isRecording: Boolean) {
+        val tagWithLocation =
+            if (preferences.tagWithLocation) {
+                if (permissionManager.hasLocationPermission()) {
+                    true
+                } else {
+                    // Permission revoked -> disabled feature
+                    preferences.tagWithLocation = false
+                    false
+                }
             } else {
-                // Permission revoked -> disabled feature
-                preferences.tagWithLocation = false
                 false
             }
-        } else {
-            false
-        }
         locationSwitch.isChecked = tagWithLocation
         if (isRecording) {
             locationSwitch.isEnabled = false
@@ -91,10 +90,7 @@ class DialogActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupHighQualitySwitch(
-        highQualitySwitch: MaterialSwitch,
-        isRecording: Boolean
-    ) {
+    private fun setupHighQualitySwitch(highQualitySwitch: MaterialSwitch, isRecording: Boolean) {
         val highQuality = preferences.recordInHighQuality
         highQualitySwitch.isChecked = highQuality
         if (isRecording) {

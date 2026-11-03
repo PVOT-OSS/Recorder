@@ -30,8 +30,7 @@ object OnBoardingHelper {
         if (appOpenTimes == RIPPLE_OPEN_APP_WAIT) {
             // Animate using ripple effect
             for (i in 1..RIPPLE_REPEAT) {
-                Handler(Looper.getMainLooper())
-                    .postDelayed(pressRipple(view), i * RIPPLE_DELAY)
+                Handler(Looper.getMainLooper()).postDelayed(pressRipple(view), i * RIPPLE_DELAY)
             }
         }
     }

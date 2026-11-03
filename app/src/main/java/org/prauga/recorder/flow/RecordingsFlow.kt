@@ -18,15 +18,11 @@ import org.prauga.recorder.models.Recording
 import org.prauga.recorder.query.Query
 import org.prauga.recorder.query.eq
 
-class RecordingsFlow(
-    val context: Context,
-) : QueryFlow<Recording>() {
+class RecordingsFlow(val context: Context) : QueryFlow<Recording>() {
     override fun flowCursor(): Flow<Cursor?> {
         val uri = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         val selection = MediaStore.Audio.Media.OWNER_PACKAGE_NAME eq Query.ARG
-        val selectionArgs = arrayOf(
-            context.packageName,
-        )
+        val selectionArgs = arrayOf(context.packageName)
         val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
 
         return context.contentResolver.queryFlow(
@@ -40,32 +36,27 @@ class RecordingsFlow(
         )
     }
 
-    override fun flowData() = flowCursor().mapEachRow(projection) { it, indexCache ->
-        var i = 0
+    override fun flowData() =
+        flowCursor().mapEachRow(projection) { it, indexCache ->
+            var i = 0
 
-        val id = it.getLong(indexCache[i++])
-        val displayName = it.getString(indexCache[i++])
-        val dateAdded = it.getLong(indexCache[i++])
-        val duration = it.getLong(indexCache[i++])
+            val id = it.getLong(indexCache[i++])
+            val displayName = it.getString(indexCache[i++])
+            val dateAdded = it.getLong(indexCache[i++])
+            val duration = it.getLong(indexCache[i++])
 
-        val uri = ContentUris.withAppendedId(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
-        )
+            val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
 
-        Recording.fromMediaStore(
-            uri,
-            displayName,
-            dateAdded,
-            duration,
-        )
-    }
+            Recording.fromMediaStore(uri, displayName, dateAdded, duration)
+        }
 
     companion object {
-        private val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.DISPLAY_NAME,
-            MediaStore.Audio.Media.DATE_ADDED,
-            MediaStore.Audio.Media.DURATION
-        )
+        private val projection =
+            arrayOf(
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.DISPLAY_NAME,
+                MediaStore.Audio.Media.DATE_ADDED,
+                MediaStore.Audio.Media.DURATION,
+            )
     }
 }

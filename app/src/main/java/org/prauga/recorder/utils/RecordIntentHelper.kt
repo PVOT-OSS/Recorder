@@ -24,11 +24,7 @@ object RecordIntentHelper {
     fun getShareIntents(uris: List<Uri>, mimeType: String?): Intent {
         val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
         intent.setType(mimeType)
-        intent.putExtras(
-            bundleOf(
-                Intent.EXTRA_STREAM to uris,
-            )
-        )
+        intent.putExtras(bundleOf(Intent.EXTRA_STREAM to uris))
         val chooserIntent = Intent.createChooser(intent, null)
         chooserIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
         return chooserIntent

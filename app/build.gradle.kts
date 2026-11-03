@@ -34,7 +34,7 @@ android {
             setProguardFiles(
                 listOf(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
+                    "proguard-rules.pro",
                 )
             )
         }
@@ -49,11 +49,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_1_8)
-        }
-    }
+    kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_1_8) } }
 }
 
 dependencies {

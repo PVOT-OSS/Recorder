@@ -38,6 +38,12 @@ import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoUnit
+import java.util.Locale
+import kotlin.reflect.safeCast
 import kotlinx.coroutines.launch
 import org.prauga.recorder.models.UiStatus
 import org.prauga.recorder.service.SoundRecorderService
@@ -48,12 +54,6 @@ import org.prauga.recorder.utils.PermissionManager
 import org.prauga.recorder.utils.PreferencesManager
 import org.prauga.recorder.utils.Utils
 import org.prauga.recorder.viewmodels.RecordingsViewModel
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
-import java.time.temporal.ChronoUnit
-import java.util.Locale
-import kotlin.reflect.safeCast
 
 class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     // View models
@@ -62,10 +62,16 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     // Views
     private val contentView by lazy { findViewById<View>(android.R.id.content) }
     private val elapsedTimeText by lazy { findViewById<TextView>(R.id.elapsedTimeTextView) }
-    private val floatingActionButton by lazy { findViewById<FloatingActionButton>(R.id.floatingActionButton) }
-    private val openSoundListImageView by lazy { findViewById<ImageView>(R.id.openSoundListImageView) }
+    private val floatingActionButton by lazy {
+        findViewById<FloatingActionButton>(R.id.floatingActionButton)
+    }
+    private val openSoundListImageView by lazy {
+        findViewById<ImageView>(R.id.openSoundListImageView)
+    }
     private val pauseResumeImageView by lazy { findViewById<ImageView>(R.id.pauseResumeImageView) }
-    private val recordingWaveFormView by lazy { findViewById<WaveFormView>(R.id.recordingWaveFormView) }
+    private val recordingWaveFormView by lazy {
+        findViewById<WaveFormView>(R.id.recordingWaveFormView)
+    }
     private val settingsImageView by lazy { findViewById<ImageView>(R.id.settingsImageView) }
     private val titleTextView by lazy { findViewById<TextView>(R.id.titleTextView) }
 
@@ -78,51 +84,54 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
 
     private var uiStatus = UiStatus.READY
 
-    private val telephonyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (TelephonyManager.ACTION_PHONE_STATE_CHANGED == intent.action) {
-                val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
-                if (TelephonyManager.EXTRA_STATE_OFFHOOK == state) {
-                    togglePause()
+    private val telephonyReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (TelephonyManager.ACTION_PHONE_STATE_CHANGED == intent.action) {
+                    val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
+                    if (TelephonyManager.EXTRA_STATE_OFFHOOK == state) {
+                        togglePause()
+                    }
                 }
             }
         }
-    }
 
-    private val messenger = Messenger(object : Handler(Looper.getMainLooper()) {
-        override fun handleMessage(msg: Message) {
-            when (msg.what) {
-                SoundRecorderService.MSG_UI_STATUS -> setStatus(msg.obj as UiStatus)
-                SoundRecorderService.MSG_SOUND_AMPLITUDE -> setVisualizerAmplitude(msg.obj as Int)
-                SoundRecorderService.MSG_TIME_ELAPSED -> setElapsedTime(msg.obj as Long)
-                else -> super.handleMessage(msg)
+    private val messenger =
+        Messenger(
+            object : Handler(Looper.getMainLooper()) {
+                override fun handleMessage(msg: Message) {
+                    when (msg.what) {
+                        SoundRecorderService.MSG_UI_STATUS -> setStatus(msg.obj as UiStatus)
+                        SoundRecorderService.MSG_SOUND_AMPLITUDE ->
+                            setVisualizerAmplitude(msg.obj as Int)
+                        SoundRecorderService.MSG_TIME_ELAPSED -> setElapsedTime(msg.obj as Long)
+                        else -> super.handleMessage(msg)
+                    }
+                }
+            }
+        )
+
+    private val serviceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName, service: IBinder) {
+                val messengerService = Messenger(service)
+                this@RecorderActivity.service = messengerService
+                try {
+                    val msg = Message.obtain(null, SoundRecorderService.MSG_REGISTER_CLIENT)
+                    msg.replyTo = messenger
+                    messengerService.send(msg)
+                } catch (e: RemoteException) {
+                    // In this case the service has crashed before we could even
+                    // do anything with it; we can count on soon being
+                    // disconnected (and then reconnected if it can be restarted)
+                    // so there is no need to do anything here.
+                }
+            }
+
+            override fun onServiceDisconnected(name: ComponentName) {
+                service = null
             }
         }
-    })
-
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val messengerService = Messenger(service)
-            this@RecorderActivity.service = messengerService
-            try {
-                val msg = Message.obtain(
-                    null,
-                    SoundRecorderService.MSG_REGISTER_CLIENT
-                )
-                msg.replyTo = messenger
-                messengerService.send(msg)
-            } catch (e: RemoteException) {
-                // In this case the service has crashed before we could even
-                // do anything with it; we can count on soon being
-                // disconnected (and then reconnected if it can be restarted)
-                // so there is no need to do anything here.
-            }
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            service = null
-        }
-    }
     private var service: Messenger? = null
     private var isServiceBound = false
 
@@ -140,9 +149,7 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
         ViewCompat.setOnApplyWindowInsetsListener(contentView) { _, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
 
-            contentView.updatePadding(
-                bottom = insets.bottom,
-            )
+            contentView.updatePadding(bottom = insets.bottom)
 
             windowInsets
         }
@@ -171,7 +178,7 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
             this,
             telephonyReceiver,
             IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED),
-            ContextCompat.RECEIVER_NOT_EXPORTED
+            ContextCompat.RECEIVER_NOT_EXPORTED,
         )
     }
 
@@ -211,9 +218,7 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     }
 
     private fun setElapsedTime(seconds: Long) {
-        elapsedTimeText.post {
-            elapsedTimeText.text = DateUtils.formatElapsedTime(seconds)
-        }
+        elapsedTimeText.post { elapsedTimeText.text = DateUtils.formatElapsedTime(seconds) }
     }
 
     private fun toggleAfterPermissionRequest() {
@@ -244,15 +249,17 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
 
     private fun togglePause() {
         when (uiStatus) {
-            UiStatus.RECORDING -> startService(
-                Intent(this, SoundRecorderService::class.java)
-                    .setAction(SoundRecorderService.ACTION_PAUSE)
-            )
+            UiStatus.RECORDING ->
+                startService(
+                    Intent(this, SoundRecorderService::class.java)
+                        .setAction(SoundRecorderService.ACTION_PAUSE)
+                )
 
-            UiStatus.PAUSED -> startService(
-                Intent(this, SoundRecorderService::class.java)
-                    .setAction(SoundRecorderService.ACTION_RESUME)
-            )
+            UiStatus.PAUSED ->
+                startService(
+                    Intent(this, SoundRecorderService::class.java)
+                        .setAction(SoundRecorderService.ACTION_RESUME)
+                )
 
             UiStatus.READY -> {}
         }
@@ -291,7 +298,8 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     private fun doBindService() {
         bindService(
             Intent(this, SoundRecorderService::class.java),
-            serviceConnection, BIND_AUTO_CREATE
+            serviceConnection,
+            BIND_AUTO_CREATE,
         )
         isServiceBound = true
     }
@@ -299,10 +307,7 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     private fun doUnbindService() {
         service?.let {
             try {
-                val msg = Message.obtain(
-                    null,
-                    SoundRecorderService.MSG_UNREGISTER_CLIENT
-                )
+                val msg = Message.obtain(null, SoundRecorderService.MSG_UNREGISTER_CLIENT)
                 msg.replyTo = messenger
                 it.send(msg)
             } catch (e: RemoteException) {
@@ -318,11 +323,9 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     }
 
     private fun openSettings() {
-        val intent = Intent(this, DialogActivity::class.java)
-            .putExtra(
-                DialogActivity.EXTRA_IS_RECORDING,
-                uiStatus != UiStatus.READY
-            )
+        val intent =
+            Intent(this, DialogActivity::class.java)
+                .putExtra(DialogActivity.EXTRA_IS_RECORDING, uiStatus != UiStatus.READY)
         startActivity(intent)
     }
 
@@ -331,8 +334,10 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     }
 
     private fun confirmLastResult() {
-        val resultIntent = Intent().setData(preferencesManager.lastItemUri)
-            .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        val resultIntent =
+            Intent()
+                .setData(preferencesManager.lastItemUri)
+                .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         setResult(RESULT_OK, resultIntent)
         finish()
     }
@@ -375,15 +380,17 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     private val newRecordFileName: String
         get() {
             val tag = locationHelper.currentLocationName ?: FILE_NAME_FALLBACK
-            val formatter = DateTimeFormatterBuilder()
-                .append(DateTimeFormatter.ISO_LOCAL_DATE)
-                .appendLiteral(' ')
-                .append(DateTimeFormatter.ISO_LOCAL_TIME)
-                .toFormatter(Locale.getDefault())
+            val formatter =
+                DateTimeFormatterBuilder()
+                    .append(DateTimeFormatter.ISO_LOCAL_DATE)
+                    .appendLiteral(' ')
+                    .append(DateTimeFormatter.ISO_LOCAL_TIME)
+                    .toFormatter(Locale.getDefault())
             val now = LocalDateTime.now()
             return String.format(
-                FILE_NAME_BASE, tag,
-                formatter.format(now.truncatedTo(ChronoUnit.SECONDS))
+                FILE_NAME_BASE,
+                tag,
+                formatter.format(now.truncatedTo(ChronoUnit.SECONDS)),
             ) + ".%1\$s"
         }
 

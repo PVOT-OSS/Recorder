@@ -26,13 +26,14 @@ import org.prauga.recorder.utils.Utils
 class RecordingsViewModel(application: Application) : AndroidViewModel(application) {
     private val contentResolver = applicationContext.contentResolver
 
-    val recordings = RecordingsRepository.recordings(applicationContext)
-        .flowOn(Dispatchers.IO)
-        .stateIn(
-            viewModelScope,
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = listOf(),
-        )
+    val recordings =
+        RecordingsRepository.recordings(applicationContext)
+            .flowOn(Dispatchers.IO)
+            .stateIn(
+                viewModelScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = listOf(),
+            )
 
     val inSelectionMode = MutableLiveData(false)
 
@@ -40,11 +41,7 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
         withContext(Dispatchers.IO) {
             for (uri in uris) {
                 try {
-                    contentResolver.delete(
-                        uri,
-                        null,
-                        null,
-                    )
+                    contentResolver.delete(uri, null, null)
                 } catch (e: SecurityException) {
                     Log.e(LOG_TAG, "Failed to delete recording", e)
                 }
@@ -54,23 +51,18 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    suspend fun deleteRecordings(
-        vararg recordings: Recording
-    ) = deleteRecordings(*recordings.map { it.uri }.toTypedArray())
+    suspend fun deleteRecordings(vararg recordings: Recording) =
+        deleteRecordings(*recordings.map { it.uri }.toTypedArray())
 
     suspend fun renameRecording(recording: Recording, newName: String) {
         withContext(Dispatchers.IO) {
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Audio.Media.DISPLAY_NAME, newName)
-                put(MediaStore.Audio.Media.TITLE, newName)
-            }
+            val contentValues =
+                ContentValues().apply {
+                    put(MediaStore.Audio.Media.DISPLAY_NAME, newName)
+                    put(MediaStore.Audio.Media.TITLE, newName)
+                }
 
-            contentResolver.update(
-                recording.uri,
-                contentValues,
-                null,
-                null
-            )
+            contentResolver.update(recording.uri, contentValues, null, null)
         }
     }
 

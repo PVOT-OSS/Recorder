@@ -32,6 +32,11 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import java.io.File
+import java.io.IOException
+import java.lang.ref.WeakReference
+import java.util.Timer
+import java.util.TimerTask
 import kotlinx.coroutines.launch
 import org.prauga.recorder.ListActivity
 import org.prauga.recorder.R
@@ -40,45 +45,31 @@ import org.prauga.recorder.models.UiStatus
 import org.prauga.recorder.repository.RecordingsRepository
 import org.prauga.recorder.utils.PreferencesManager
 import org.prauga.recorder.utils.RecordIntentHelper
-import java.io.File
-import java.io.IOException
-import java.lang.ref.WeakReference
-import java.util.Timer
-import java.util.TimerTask
 
 class SoundRecorderService : LifecycleService() {
     // System services
-    private val notificationManager by lazy {
-        getSystemService(NotificationManager::class.java)
-    }
+    private val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
 
-    private val preferencesManager by lazy {
-        PreferencesManager(this)
-    }
+    private val preferencesManager by lazy { PreferencesManager(this) }
 
     private val lock = Any()
 
-    @GuardedBy("lock")
-    private val clients = HashMap<IBinder, RecorderClient>()
+    @GuardedBy("lock") private val clients = HashMap<IBinder, RecorderClient>()
 
-    private val handler: Handler = object : Handler(Looper.myLooper()!!) {
-        override fun handleMessage(msg: Message) {
-            when (msg.what) {
-                MSG_REGISTER_CLIENT -> registerClient(
-                    RecorderClient.of(
-                        msg.replyTo,
-                        msg.replyTo.binder
-                    )
-                )
+    private val handler: Handler =
+        object : Handler(Looper.myLooper()!!) {
+            override fun handleMessage(msg: Message) {
+                when (msg.what) {
+                    MSG_REGISTER_CLIENT ->
+                        registerClient(RecorderClient.of(msg.replyTo, msg.replyTo.binder))
 
-                MSG_UNREGISTER_CLIENT -> synchronized(lock) {
-                    unregisterClientLocked(msg.replyTo.binder)
+                    MSG_UNREGISTER_CLIENT ->
+                        synchronized(lock) { unregisterClientLocked(msg.replyTo.binder) }
+
+                    else -> super.handleMessage(msg)
                 }
-
-                else -> super.handleMessage(msg)
             }
         }
-    }
     private val messenger = Messenger(handler)
     private var recorder: SoundRecording? = null
     private var recordFile: File? = null
@@ -87,11 +78,12 @@ class SoundRecorderService : LifecycleService() {
     private var isPaused = false
     private var elapsedTime = 0L
 
-    private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            stopRecording()
+    private val shutdownReceiver: BroadcastReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                stopRecording()
+            }
         }
-    }
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -106,7 +98,7 @@ class SoundRecorderService : LifecycleService() {
             this,
             shutdownReceiver,
             IntentFilter(Intent.ACTION_SHUTDOWN),
-            ContextCompat.RECEIVER_NOT_EXPORTED
+            ContextCompat.RECEIVER_NOT_EXPORTED,
         )
 
         if (notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL) == null) {
@@ -129,13 +121,14 @@ class SoundRecorderService : LifecycleService() {
 
         return intent?.let {
             when (it.action) {
-                ACTION_START -> it.getStringExtra(EXTRA_FILE_NAME)?.let { fileName ->
-                    if (startRecording(fileName)) {
-                        START_STICKY
-                    } else {
-                        START_NOT_STICKY
-                    }
-                } ?: START_NOT_STICKY
+                ACTION_START ->
+                    it.getStringExtra(EXTRA_FILE_NAME)?.let { fileName ->
+                        if (startRecording(fileName)) {
+                            START_STICKY
+                        } else {
+                            START_NOT_STICKY
+                        }
+                    } ?: START_NOT_STICKY
 
                 ACTION_STOP -> if (stopRecording()) START_STICKY else START_NOT_STICKY
 
@@ -149,23 +142,24 @@ class SoundRecorderService : LifecycleService() {
     }
 
     private fun startRecording(fileName: String): Boolean {
-        if (checkSelfPermission(permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (checkSelfPermission(permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "Missing permission to record audio")
             return false
         }
 
-        recorder = when (preferencesManager.recordInHighQuality) {
-            true -> HighQualityRecorder()
-            else -> GoodQualityRecorder(this)
-        }
+        recorder =
+            when (preferencesManager.recordInHighQuality) {
+                true -> HighQualityRecorder()
+                else -> GoodQualityRecorder(this)
+            }
 
         return recorder?.let { recorder ->
-            val file = createNewAudioFile(fileName, recorder.fileExtension) ?: run {
-                Log.e(TAG, "Failed to prepare output file")
-                return@let false
-            }
+            val file =
+                createNewAudioFile(fileName, recorder.fileExtension)
+                    ?: run {
+                        Log.e(TAG, "Failed to prepare output file")
+                        return@let false
+                    }
 
             this.recordFile = file
 
@@ -187,10 +181,12 @@ class SoundRecorderService : LifecycleService() {
     }
 
     private fun stopRecording(): Boolean {
-        val recorder = recorder ?: run {
-            Log.e(TAG, "Trying to stop null recorder")
-            return false
-        }
+        val recorder =
+            recorder
+                ?: run {
+                    Log.e(TAG, "Trying to stop null recorder")
+                    return false
+                }
 
         if (isPaused) {
             isPaused = false
@@ -201,24 +197,25 @@ class SoundRecorderService : LifecycleService() {
 
         val success = recorder.stopRecording()
 
-        return recordFile?.takeIf { success }?.let {
-            lifecycleScope.launch {
-                RecordingsRepository.addRecordingToContentProvider(
-                    this@SoundRecorderService,
-                    it,
-                    recorder.mimeType
-                )?.also { uri ->
-                    onRecordCompleted(uri)
-                } ?: run {
-                    Log.e(TAG, "Failed to save recording")
+        return recordFile
+            ?.takeIf { success }
+            ?.let {
+                lifecycleScope.launch {
+                    RecordingsRepository.addRecordingToContentProvider(
+                            this@SoundRecorderService,
+                            it,
+                            recorder.mimeType,
+                        )
+                        ?.also { uri -> onRecordCompleted(uri) }
+                        ?: run { Log.e(TAG, "Failed to save recording") }
                 }
-            }
 
-            true
-        } ?: run {
-            onRecordFailed()
-            false
-        }
+                true
+            }
+            ?: run {
+                onRecordFailed()
+                false
+            }
     }
 
     private fun pauseRecording(): Boolean {
@@ -235,7 +232,7 @@ class SoundRecorderService : LifecycleService() {
                 notifyStatus(UiStatus.PAUSED)
                 notificationManager.notify(
                     NOTIFICATION_ID,
-                    createRecordingNotification(elapsedTime)
+                    createRecordingNotification(elapsedTime),
                 )
 
                 true
@@ -243,10 +240,11 @@ class SoundRecorderService : LifecycleService() {
                 Log.e(TAG, "Failed to pause the recorder")
                 false
             }
-        } ?: run {
-            Log.e(TAG, "Pausing null recorder")
-            false
         }
+            ?: run {
+                Log.e(TAG, "Pausing null recorder")
+                false
+            }
     }
 
     private fun resumeRecording(): Boolean {
@@ -262,7 +260,7 @@ class SoundRecorderService : LifecycleService() {
                 notifyStatus(UiStatus.RECORDING)
                 notificationManager.notify(
                     NOTIFICATION_ID,
-                    createRecordingNotification(elapsedTime)
+                    createRecordingNotification(elapsedTime),
                 )
 
                 true
@@ -270,10 +268,11 @@ class SoundRecorderService : LifecycleService() {
                 Log.e(TAG, "Failed to resume the recorder")
                 false
             }
-        } ?: run {
-            Log.e(TAG, "Resuming null recorder")
-            false
         }
+            ?: run {
+                Log.e(TAG, "Resuming null recorder")
+                false
+            }
     }
 
     private fun onRecordCompleted(uri: String?) {
@@ -295,16 +294,13 @@ class SoundRecorderService : LifecycleService() {
         notifyStatus(UiStatus.READY)
     }
 
-    private fun createNewAudioFile(
-        fileName: String,
-        extension: String
-    ): File? {
-        val recordingDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)
-        } else {
-            getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-                ?.resolve(LEGACY_MUSIC_DIR)
-        } ?: throw Exception("Null external files dir")
+    private fun createNewAudioFile(fileName: String, extension: String): File? {
+        val recordingDir =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                getExternalFilesDir(Environment.DIRECTORY_RECORDINGS)
+            } else {
+                getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.resolve(LEGACY_MUSIC_DIR)
+            } ?: throw Exception("Null external files dir")
 
         val file = recordingDir.resolve(String.format(fileName, extension))
 
@@ -327,28 +323,38 @@ class SoundRecorderService : LifecycleService() {
     }
 
     private fun startElapsedTimeTimer() {
-        elapsedTimeTimer = Timer().apply {
-            scheduleAtFixedRate(object : TimerTask() {
-                override fun run() {
-                    val newElapsedTime = ++elapsedTime
-                    notifyElapsedTime(newElapsedTime)
-                    val notification = createRecordingNotification(newElapsedTime)
-                    notificationManager.notify(NOTIFICATION_ID, notification)
-                }
-            }, 1000, 1000)
-        }
+        elapsedTimeTimer =
+            Timer().apply {
+                scheduleAtFixedRate(
+                    object : TimerTask() {
+                        override fun run() {
+                            val newElapsedTime = ++elapsedTime
+                            notifyElapsedTime(newElapsedTime)
+                            val notification = createRecordingNotification(newElapsedTime)
+                            notificationManager.notify(NOTIFICATION_ID, notification)
+                        }
+                    },
+                    1000,
+                    1000,
+                )
+            }
     }
 
     private fun startAmplitudeTimer() {
-        amplitudeTimer = Timer().also {
-            it.schedule(object : TimerTask() {
-                override fun run() {
-                    recorder?.currentAmplitude?.let { currentAmplitude ->
-                        notifyCurrentSoundAmplitude(currentAmplitude)
-                    }
-                }
-            }, 0, 350)
-        }
+        amplitudeTimer =
+            Timer().also {
+                it.schedule(
+                    object : TimerTask() {
+                        override fun run() {
+                            recorder?.currentAmplitude?.let { currentAmplitude ->
+                                notifyCurrentSoundAmplitude(currentAmplitude)
+                            }
+                        }
+                    },
+                    0,
+                    350,
+                )
+            }
     }
 
     private fun stopTimers() {
@@ -377,13 +383,14 @@ class SoundRecorderService : LifecycleService() {
             client.token.linkToDeath(RecorderClientDeathRecipient(this, client), 0)
 
             // Notify about the current status
-            val currentStatus = if (recorder == null) {
-                UiStatus.READY
-            } else if (isPaused) {
-                UiStatus.PAUSED
-            } else {
-                UiStatus.RECORDING
-            }
+            val currentStatus =
+                if (recorder == null) {
+                    UiStatus.READY
+                } else if (isPaused) {
+                    UiStatus.PAUSED
+                } else {
+                    UiStatus.RECORDING
+                }
             client.send(handler.obtainMessage(MSG_UI_STATUS, currentStatus))
 
             // Also notify about elapsed time
@@ -398,9 +405,7 @@ class SoundRecorderService : LifecycleService() {
     private fun unregisterClients() {
         synchronized(lock) {
             for (client in clients.values) {
-                client.deathRecipient?.let {
-                    client.token.unlinkToDeath(it, 0)
-                }
+                client.deathRecipient?.let { client.token.unlinkToDeath(it, 0) }
             }
         }
     }
@@ -408,9 +413,7 @@ class SoundRecorderService : LifecycleService() {
     @GuardedBy("mLock")
     private fun unregisterClientLocked(token: IBinder): Boolean {
         val client = clients.remove(token) ?: return false
-        client.deathRecipient?.let {
-            token.unlinkToDeath(it, 0)
-        }
+        client.deathRecipient?.let { token.unlinkToDeath(it, 0) }
 
         return true
     }
@@ -439,49 +442,48 @@ class SoundRecorderService : LifecycleService() {
         val name = getString(R.string.sound_channel_title)
         val description = getString(R.string.sound_channel_desc)
 
-        val notificationChannel = NotificationChannel(
-            NOTIFICATION_CHANNEL, name, NotificationManager.IMPORTANCE_LOW
-        ).apply {
-            this.description = description
-        }
+        val notificationChannel =
+            NotificationChannel(NOTIFICATION_CHANNEL, name, NotificationManager.IMPORTANCE_LOW)
+                .apply { this.description = description }
 
         notificationManager.createNotificationChannel(notificationChannel)
     }
 
     private fun createRecordingNotification(elapsedTime: Long): Notification {
         val intent = Intent(this, RecorderActivity::class.java)
-        val pi = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        val stopPIntent = PendingIntent.getService(
-            this, 0,
-            Intent(this, SoundRecorderService::class.java)
-                .setAction(ACTION_STOP),
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        val duration = DateUtils.formatElapsedTime(elapsedTime)
-        val nb = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
-            .setOngoing(true)
-            .setContentText(getString(R.string.sound_notification_message, duration))
-            .setSmallIcon(R.drawable.ic_mic)
-            .setContentIntent(pi)
-        if (isPaused) {
-            val resumePIntent = PendingIntent.getService(
-                this, 0,
-                Intent(this, SoundRecorderService::class.java)
-                    .setAction(ACTION_RESUME),
-                PendingIntent.FLAG_IMMUTABLE
+        val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val stopPIntent =
+            PendingIntent.getService(
+                this,
+                0,
+                Intent(this, SoundRecorderService::class.java).setAction(ACTION_STOP),
+                PendingIntent.FLAG_IMMUTABLE,
             )
+        val duration = DateUtils.formatElapsedTime(elapsedTime)
+        val nb =
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
+                .setOngoing(true)
+                .setContentText(getString(R.string.sound_notification_message, duration))
+                .setSmallIcon(R.drawable.ic_mic)
+                .setContentIntent(pi)
+        if (isPaused) {
+            val resumePIntent =
+                PendingIntent.getService(
+                    this,
+                    0,
+                    Intent(this, SoundRecorderService::class.java).setAction(ACTION_RESUME),
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
             nb.setContentTitle(getString(R.string.sound_recording_title_paused))
             nb.addAction(R.drawable.ic_play_arrow, getString(R.string.resume), resumePIntent)
         } else {
-            val pausePIntent = PendingIntent.getService(
-                this, 0,
-                Intent(this, SoundRecorderService::class.java)
-                    .setAction(ACTION_PAUSE),
-                PendingIntent.FLAG_IMMUTABLE
-            )
+            val pausePIntent =
+                PendingIntent.getService(
+                    this,
+                    0,
+                    Intent(this, SoundRecorderService::class.java).setAction(ACTION_PAUSE),
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
             nb.setContentTitle(getString(R.string.sound_recording_title_working))
             nb.addAction(R.drawable.ic_pause, getString(R.string.pause), pausePIntent)
         }
@@ -494,35 +496,40 @@ class SoundRecorderService : LifecycleService() {
 
         preferencesManager.lastItemUri = fileUri
 
-        val mimeType = recorder?.mimeType ?: run {
-            Log.e(TAG, "No recorder found while creating the share notification")
-            return null
-        }
+        val mimeType =
+            recorder?.mimeType
+                ?: run {
+                    Log.e(TAG, "No recorder found while creating the share notification")
+                    return null
+                }
 
         val intent = Intent(this, ListActivity::class.java)
 
-        val pi = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
+        val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val playPIntent = PendingIntent.getActivity(
-            this, 0,
-            RecordIntentHelper.getOpenIntent(fileUri, mimeType),
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val playPIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                RecordIntentHelper.getOpenIntent(fileUri, mimeType),
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
-        val sharePIntent = PendingIntent.getActivity(
-            this, 0,
-            RecordIntentHelper.getShareIntent(fileUri, mimeType),
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val sharePIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                RecordIntentHelper.getShareIntent(fileUri, mimeType),
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
-        val deletePIntent = PendingIntent.getActivity(
-            this, 0,
-            RecordIntentHelper.getDeleteIntent(this),
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val deletePIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                RecordIntentHelper.getDeleteIntent(this),
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
         val duration = DateUtils.formatElapsedTime(elapsedTime)
 
@@ -538,10 +545,7 @@ class SoundRecorderService : LifecycleService() {
             .build()
     }
 
-    class RecorderClient private constructor(
-        private val messenger: Messenger,
-        val token: IBinder
-    ) {
+    class RecorderClient private constructor(private val messenger: Messenger, val token: IBinder) {
         var deathRecipient: DeathRecipient? = null
 
         fun send(message: Message?) {
@@ -559,7 +563,7 @@ class SoundRecorderService : LifecycleService() {
 
     private class RecorderClientDeathRecipient(
         service: SoundRecorderService,
-        private val client: RecorderClient
+        private val client: RecorderClient,
     ) : DeathRecipient {
         private val serviceRef: WeakReference<SoundRecorderService>
 

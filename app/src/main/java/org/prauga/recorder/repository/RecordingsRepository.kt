@@ -10,12 +10,12 @@ import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.prauga.recorder.flow.RecordingsFlow
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.prauga.recorder.flow.RecordingsFlow
 
 object RecordingsRepository {
     private val LOG_TAG = this::class.simpleName!!
@@ -29,65 +29,62 @@ object RecordingsRepository {
 
     fun recordings(context: Context) = RecordingsFlow(context).flowData()
 
-    suspend fun addRecordingToContentProvider(
-        context: Context, file: File, mimeType: String
-    ) = withContext(Dispatchers.IO) {
-        val contentResolver = context.contentResolver
+    suspend fun addRecordingToContentProvider(context: Context, file: File, mimeType: String) =
+        withContext(Dispatchers.IO) {
+            val contentResolver = context.contentResolver
 
-        val uri = contentResolver.insert(
-            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
-            buildCv(file, mimeType)
-        ) ?: run {
-            Log.e(LOG_TAG, "Failed to insert ${file.absoluteFile}")
+            val uri =
+                contentResolver.insert(
+                    MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                    buildCv(file, mimeType),
+                )
+                    ?: run {
+                        Log.e(LOG_TAG, "Failed to insert ${file.absoluteFile}")
 
-            return@withContext null
-        }
-
-        return@withContext try {
-            contentResolver.openFileDescriptor(
-                uri, "w", null
-            )?.use { pfd ->
-                FileOutputStream(pfd.fileDescriptor).use { oStream ->
-                    file.inputStream().use { iStream ->
-                        iStream.copyTo(oStream)
+                        return@withContext null
                     }
-                }
-                val values = ContentValues().apply {
-                    put(MediaStore.MediaColumns.IS_PENDING, 0)
-                }
-                contentResolver.update(uri, values, null, null)
-                try {
-                    file.delete()
-                } catch (e: IOException) {
-                    Log.w(LOG_TAG, "Failed to delete tmp file")
-                }
 
-                uri.toString()
+            return@withContext try {
+                contentResolver.openFileDescriptor(uri, "w", null)?.use { pfd ->
+                    FileOutputStream(pfd.fileDescriptor).use { oStream ->
+                        file.inputStream().use { iStream -> iStream.copyTo(oStream) }
+                    }
+                    val values =
+                        ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }
+                    contentResolver.update(uri, values, null, null)
+                    try {
+                        file.delete()
+                    } catch (e: IOException) {
+                        Log.w(LOG_TAG, "Failed to delete tmp file")
+                    }
+
+                    uri.toString()
+                }
+            } catch (e: IOException) {
+                Log.e(LOG_TAG, "Failed to write into MediaStore", e)
+
+                null
             }
-        } catch (e: IOException) {
-            Log.e(LOG_TAG, "Failed to write into MediaStore", e)
-
-            null
         }
-    }
 
-    private fun buildCv(file: File, mimeType: String) = ContentValues().apply {
-        val name = file.name
+    private fun buildCv(file: File, mimeType: String) =
+        ContentValues().apply {
+            val name = file.name
 
-        put(MediaStore.Audio.Media.DISPLAY_NAME, name)
-        put(MediaStore.Audio.Media.TITLE, name)
-        put(MediaStore.Audio.Media.MIME_TYPE, mimeType)
-        put(MediaStore.Audio.Media.ARTIST, ARTIST)
-        put(MediaStore.Audio.Media.ALBUM, ALBUM)
-        put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis() / 1000L)
-        put(
-            MediaStore.Audio.Media.RELATIVE_PATH,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PATH
-            } else {
-                PATH_LEGACY
-            }
-        )
-        put(MediaStore.Audio.Media.IS_PENDING, 1)
-    }
+            put(MediaStore.Audio.Media.DISPLAY_NAME, name)
+            put(MediaStore.Audio.Media.TITLE, name)
+            put(MediaStore.Audio.Media.MIME_TYPE, mimeType)
+            put(MediaStore.Audio.Media.ARTIST, ARTIST)
+            put(MediaStore.Audio.Media.ALBUM, ALBUM)
+            put(MediaStore.Audio.Media.DATE_ADDED, System.currentTimeMillis() / 1000L)
+            put(
+                MediaStore.Audio.Media.RELATIVE_PATH,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PATH
+                } else {
+                    PATH_LEGACY
+                },
+            )
+            put(MediaStore.Audio.Media.IS_PENDING, 1)
+        }
 }

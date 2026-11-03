@@ -11,13 +11,13 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import org.prauga.recorder.utils.PcmConverter
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.abs
+import org.prauga.recorder.utils.PcmConverter
 
 class HighQualityRecorder : SoundRecording {
     private var record: AudioRecord? = null
@@ -29,17 +29,21 @@ class HighQualityRecorder : SoundRecording {
     override fun startRecording(file: File) {
         this.file = file
 
-        val audioFormat = AudioFormat.Builder()
-            .setSampleRate(SAMPLING_RATE)
-            .setChannelMask(CHANNEL_IN)
-            .setEncoding(FORMAT)
-            .build()
-        record = AudioRecord(
-            MediaRecorder.AudioSource.DEFAULT, audioFormat.sampleRate,
-            audioFormat.channelMask, audioFormat.encoding, BUFFER_SIZE
-        ).apply {
-            startRecording()
-        }
+        val audioFormat =
+            AudioFormat.Builder()
+                .setSampleRate(SAMPLING_RATE)
+                .setChannelMask(CHANNEL_IN)
+                .setEncoding(FORMAT)
+                .build()
+        record =
+            AudioRecord(
+                    MediaRecorder.AudioSource.DEFAULT,
+                    audioFormat.sampleRate,
+                    audioFormat.channelMask,
+                    audioFormat.encoding,
+                    BUFFER_SIZE,
+                )
+                .apply { startRecording() }
 
         isRecording = true
 
@@ -96,10 +100,11 @@ class HighQualityRecorder : SoundRecording {
 
                         maxAmplitude = 0
                         for (i in 0 until read step 2) {
-                            val sample = ByteBuffer.wrap(buffer, i, 2)
-                                .order(ByteOrder.LITTLE_ENDIAN)
-                                .short
-                                .toInt()
+                            val sample =
+                                ByteBuffer.wrap(buffer, i, 2)
+                                    .order(ByteOrder.LITTLE_ENDIAN)
+                                    .short
+                                    .toInt()
                             maxAmplitude = maxOf(maxAmplitude, abs(sample))
                         }
                     }
@@ -122,10 +127,6 @@ class HighQualityRecorder : SoundRecording {
         private const val SAMPLING_RATE = 44100
         private const val CHANNEL_IN = AudioFormat.CHANNEL_IN_STEREO
         private const val FORMAT = AudioFormat.ENCODING_PCM_16BIT
-        private val BUFFER_SIZE = AudioRecord.getMinBufferSize(
-            SAMPLING_RATE,
-            CHANNEL_IN,
-            FORMAT
-        )
+        private val BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLING_RATE, CHANNEL_IN, FORMAT)
     }
 }

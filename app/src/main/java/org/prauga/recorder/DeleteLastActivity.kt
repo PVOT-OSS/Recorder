@@ -25,10 +25,12 @@ class DeleteLastActivity : ComponentActivity() {
         setFinishOnTouchOutside(true)
 
         val preferences = PreferencesManager(this)
-        val uri = preferences.lastItemUri ?: run {
-            finish()
-            return
-        }
+        val uri =
+            preferences.lastItemUri
+                ?: run {
+                    finish()
+                    return
+                }
 
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_title)

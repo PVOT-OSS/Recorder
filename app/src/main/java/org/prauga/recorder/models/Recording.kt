@@ -8,20 +8,18 @@ package org.prauga.recorder.models
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
-import org.prauga.recorder.ext.readParcelable
 import java.util.Date
+import org.prauga.recorder.ext.readParcelable
 
-data class Recording(
-    val uri: Uri,
-    val title: String,
-    val dateAdded: Date,
-    val duration: Long,
-) : Parcelable {
-    constructor(parcel: Parcel) : this(
+data class Recording(val uri: Uri, val title: String, val dateAdded: Date, val duration: Long) :
+    Parcelable {
+    constructor(
+        parcel: Parcel
+    ) : this(
         parcel.readParcelable(Uri::class)!!,
         parcel.readString()!!,
         Date(parcel.readLong()),
-        parcel.readLong()
+        parcel.readLong(),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -38,16 +36,7 @@ data class Recording(
 
         override fun newArray(size: Int) = arrayOfNulls<Recording>(size)
 
-        fun fromMediaStore(
-            uri: Uri,
-            title: String,
-            dateAdded: Long,
-            duration: Long,
-        ) = Recording(
-            uri,
-            title,
-            Date(dateAdded * 1000),
-            duration,
-        )
+        fun fromMediaStore(uri: Uri, title: String, dateAdded: Long, duration: Long) =
+            Recording(uri, title, Date(dateAdded * 1000), duration)
     }
 }

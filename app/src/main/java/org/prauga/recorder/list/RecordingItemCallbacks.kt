@@ -9,7 +9,10 @@ import org.prauga.recorder.models.Recording
 
 interface RecordingItemCallbacks {
     fun onPlay(recording: Recording)
+
     fun onShare(recording: Recording)
+
     fun onDelete(recording: Recording)
+
     fun onRename(recording: Recording)
 }

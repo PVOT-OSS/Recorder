@@ -22,25 +22,28 @@ class LocationHelper(private val context: Context) {
     }
 
     val currentLocationName: String?
-        get() = lastGoodLocation
-            ?.let { lastGoodLocation: Location ->
-                val geocoder = Geocoder(context)
-                try {
-                    geocoder.getFromLocation(
-                        lastGoodLocation.latitude,
-                        lastGoodLocation.longitude, 1
-                    )
-                } catch (e: IOException) {
-                    Log.e(TAG, "Failed to obtain address from last known location", e)
-                    emptyList<Address>()
+        get() =
+            lastGoodLocation
+                ?.let { lastGoodLocation: Location ->
+                    val geocoder = Geocoder(context)
+                    try {
+                        geocoder.getFromLocation(
+                            lastGoodLocation.latitude,
+                            lastGoodLocation.longitude,
+                            1,
+                        )
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Failed to obtain address from last known location", e)
+                        emptyList<Address>()
+                    }
                 }
-            }?.firstOrNull()
-            ?.let { address: Address ->
-                address.featureName?.takeIf {
-                    // Street numbers may be returned here, ignore them
-                    it.length > 3
-                } ?: address.locality ?: address.countryName
-            }
+                ?.firstOrNull()
+                ?.let { address: Address ->
+                    address.featureName?.takeIf {
+                        // Street numbers may be returned here, ignore them
+                        it.length > 3
+                    } ?: address.locality ?: address.countryName
+                }
 
     private val lastGoodLocation: Location?
         get() {
@@ -48,17 +51,14 @@ class LocationHelper(private val context: Context) {
                 return null
             }
 
-            val lastGoodLocation = try {
-                locationManager?.getLastKnownLocation(
-                    LocationManager.GPS_PROVIDER
-                ) ?: locationManager?.getLastKnownLocation(
-                    LocationManager.NETWORK_PROVIDER
-                ) ?: locationManager?.getLastKnownLocation(
-                    LocationManager.PASSIVE_PROVIDER
-                )
-            } catch (e: SecurityException) {
-                null
-            }
+            val lastGoodLocation =
+                try {
+                    locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                        ?: locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                        ?: locationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+                } catch (e: SecurityException) {
+                    null
+                }
 
             return lastGoodLocation?.takeIf { it.accuracy != 0f }
         }

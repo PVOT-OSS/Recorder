@@ -24,11 +24,11 @@ import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
+import java.util.Locale
 import org.prauga.recorder.R
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.viewmodels.RecordingsViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class RecordingsAdapter(
     private val model: RecordingsViewModel,
@@ -39,15 +39,15 @@ class RecordingsAdapter(
 
     var selectionTracker: SelectionTracker<Recording>? = null
 
-    val itemKeyProvider = object : ItemKeyProvider<Recording>(SCOPE_CACHED) {
-        override fun getKey(position: Int) = getItem(position)
+    val itemKeyProvider =
+        object : ItemKeyProvider<Recording>(SCOPE_CACHED) {
+            override fun getKey(position: Int) = getItem(position)
 
-        override fun getPosition(key: Recording) = recordingToIndex?.get(key) ?: -1
-    }
+            override fun getPosition(key: Recording) = recordingToIndex?.get(key) ?: -1
+        }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-        LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false),
-    )
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false))
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val recording = getItem(position)
@@ -59,7 +59,7 @@ class RecordingsAdapter(
 
     override fun onCurrentListChanged(
         previousList: MutableList<Recording>,
-        currentList: MutableList<Recording>
+        currentList: MutableList<Recording>,
     ) {
         super.onCurrentListChanged(previousList, currentList)
 
@@ -101,10 +101,12 @@ class RecordingsAdapter(
             updateSelection()
         }
 
-        val itemDetails = object : ItemDetailsLookup.ItemDetails<Recording>() {
-            override fun getPosition() = bindingAdapterPosition
-            override fun getSelectionKey() = recording
-        }
+        val itemDetails =
+            object : ItemDetailsLookup.ItemDetails<Recording>() {
+                override fun getPosition() = bindingAdapterPosition
+
+                override fun getSelectionKey() = recording
+            }
 
         init {
             itemView.setOnClickListener { callbacks.onPlay(recording) }
@@ -126,11 +128,13 @@ class RecordingsAdapter(
             this.isSelected = isSelected
 
             titleTextView.text = recording.title
-            dateTextView.text = String.format(
-                Locale.getDefault(), SUMMARY_FORMAT,
-                dateFormatter.format(recording.dateAdded),
-                timeFormatter.format(recording.dateAdded)
-            )
+            dateTextView.text =
+                String.format(
+                    Locale.getDefault(),
+                    SUMMARY_FORMAT,
+                    dateFormatter.format(recording.dateAdded),
+                    timeFormatter.format(recording.dateAdded),
+                )
 
             updateSelection()
         }
@@ -142,64 +146,57 @@ class RecordingsAdapter(
             playImageView.setImageResource(
                 when (inSelectionMode) {
                     false -> R.drawable.ic_play_circle
-                    true -> when (isSelected) {
-                        false -> R.drawable.ic_radio_button_unchecked
-                        true -> R.drawable.ic_check_circle
-                    }
+                    true ->
+                        when (isSelected) {
+                            false -> R.drawable.ic_radio_button_unchecked
+                            true -> R.drawable.ic_check_circle
+                        }
                 }
             )
         }
 
         @Suppress("RestrictedApi")
         private fun showPopupMenu(view: View) {
-            val wrapper = ContextThemeWrapper(
-                itemView.context,
-                R.style.AppTheme_PopupMenuOverlapAnchor
-            )
+            val wrapper =
+                ContextThemeWrapper(itemView.context, R.style.AppTheme_PopupMenuOverlapAnchor)
             val popupMenu = PopupMenu(wrapper, view, Gravity.NO_GRAVITY)
             popupMenu.inflate(R.menu.menu_list_item)
             popupMenu.setOnMenuItemClickListener { item: MenuItem -> onActionSelected(item.itemId) }
-            val helper = MenuPopupHelper(
-                wrapper,
-                (popupMenu.menu as MenuBuilder),
-                view
-            )
+            val helper = MenuPopupHelper(wrapper, (popupMenu.menu as MenuBuilder), view)
             helper.setForceShowIcon(true)
             helper.show()
         }
 
-        private fun onActionSelected(actionId: Int) = when (actionId) {
-            R.id.action_rename -> {
-                callbacks.onRename(recording)
-                true
-            }
+        private fun onActionSelected(actionId: Int) =
+            when (actionId) {
+                R.id.action_rename -> {
+                    callbacks.onRename(recording)
+                    true
+                }
 
-            R.id.action_share -> {
-                callbacks.onShare(recording)
-                true
-            }
+                R.id.action_share -> {
+                    callbacks.onShare(recording)
+                    true
+                }
 
-            R.id.action_delete -> {
-                callbacks.onDelete(recording)
-                true
-            }
+                R.id.action_delete -> {
+                    callbacks.onDelete(recording)
+                    true
+                }
 
-            else -> false
-        }
+                else -> false
+            }
     }
 
     companion object {
-        private val diffCallback = object : DiffUtil.ItemCallback<Recording>() {
-            override fun areItemsTheSame(
-                oldItem: Recording,
-                newItem: Recording
-            ) = oldItem.uri == newItem.uri
+        private val diffCallback =
+            object : DiffUtil.ItemCallback<Recording>() {
+                override fun areItemsTheSame(oldItem: Recording, newItem: Recording) =
+                    oldItem.uri == newItem.uri
 
-            override fun areContentsTheSame(
-                oldItem: Recording,
-                newItem: Recording
-            ) = oldItem == newItem
-        }
+                override fun areContentsTheSame(oldItem: Recording, newItem: Recording) =
+                    oldItem == newItem
+            }
 
         private const val SUMMARY_FORMAT = "%s - %s"
 
