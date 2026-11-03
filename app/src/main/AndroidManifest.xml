@@ -49,6 +49,8 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
+        <activity android:name=".OnboardingActivity" />
+
         <activity
             android:name=".RecordActionActivity"
             android:excludeFromRecents="true"

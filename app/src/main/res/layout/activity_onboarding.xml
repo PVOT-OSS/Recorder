@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/onboardingRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginTop="48dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_mic"
+            app:tint="?attr/colorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:accessibilityHeading="true"
+            android:text="@string/onboarding_title"
+            android:textAppearance="?attr/textAppearanceHeadlineMedium" />
+
+        <TextView
+            style="@style/AppTheme.OnboardingPoint"
+            android:drawableStart="@drawable/ic_mic"
+            android:text="@string/onboarding_private" />
+
+        <TextView
+            style="@style/AppTheme.OnboardingPoint"
+            android:drawableStart="@drawable/ic_notes"
+            android:text="@string/onboarding_transcription" />
+
+        <Button
+            android:id="@+id/onboardingModelsButton"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_models"
+            app:icon="@drawable/ic_download" />
+
+        <TextView
+            style="@style/AppTheme.OnboardingPoint"
+            android:drawableStart="@drawable/ic_search"
+            android:text="@string/onboarding_search" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/onboardingLocationSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/settings_location" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/onboardingDoneButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/onboarding_done" />
+    </LinearLayout>
+</ScrollView>

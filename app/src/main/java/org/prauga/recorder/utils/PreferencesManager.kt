@@ -83,6 +83,12 @@ class PreferencesManager(context: Context) {
     val theme: String?
         get() = preferences.getString(PREF_THEME, null)
 
+    var onboarded: Boolean
+        get() = preferences.getBoolean(PREF_ONBOARDED, false)
+        set(value) {
+            preferences.edit().putBoolean(PREF_ONBOARDED, value).apply()
+        }
+
     var onboardSettingsCounter: Int
         get() = preferences.getInt(PREF_ONBOARD_SETTINGS_COUNTER, 0)
         set(value) {
@@ -108,6 +114,7 @@ class PreferencesManager(context: Context) {
         const val PREFS = "preferences"
         const val PREF_TAG_WITH_LOCATION = "tag_with_location"
         const val PREF_THEME = "theme"
+        private const val PREF_ONBOARDED = "onboarded"
         const val PREF_TRANSCRIBE = "transcribe"
         const val PREF_SPEECH_MODEL = "speech_model"
         const val PREF_WIFI_ONLY = "models_wifi_only"

@@ -150,6 +150,10 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
 
         pendingAction = intent.action
 
+        if (savedInstanceState == null && !preferencesManager.onboarded && !returnAudio) {
+            startActivity(Intent(this, OnboardingActivity::class.java))
+        }
+
         doBindService()
 
         OnBoardingHelper.onBoardList(this, openSoundListImageView)

@@ -128,6 +128,13 @@
     <!-- Rename -->
     <string name="rename_suggest">Suggest</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_title">Welcome to Recorder</string>
+    <string name="onboarding_private">Recordings, transcripts and labels stay on this phone. Nothing is uploaded</string>
+    <string name="onboarding_transcription">Get live transcripts by downloading a speech model for your language. It runs offline</string>
+    <string name="onboarding_search">Search across every word, place, label and sound you recorded</string>
+    <string name="onboarding_done">Get started</string>
+
     <!-- Settings -->
     <string name="settings_category_recording">Recording</string>
     <string name="settings_category_appearance">Appearance</string>

@@ -51,6 +51,16 @@
         <item name="android:tint">?attr/colorOnSurface</item>
     </style>
 
+    <style name="AppTheme.OnboardingPoint">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:drawablePadding">16dp</item>
+        <item name="android:drawableTint">?attr/colorPrimary</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodyLarge</item>
+    </style>
+
     <style name="AppTheme.PopupMenuOverlapAnchor">
         <item name="android:overlapAnchor">true</item>
         <item name="android:dropDownVerticalOffset">0dp</item>
