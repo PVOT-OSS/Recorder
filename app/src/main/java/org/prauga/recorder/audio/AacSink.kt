@@ -98,6 +98,7 @@ class AacSink(private val file: File, private val bitrate: Int) : PcmSink {
 
     private fun drain(endOfStream: Boolean) {
         val codec = codec ?: return
+        var idle = 0
         while (true) {
             val index = codec.dequeueOutputBuffer(info, if (endOfStream) TIMEOUT_US else 0)
             when {
@@ -121,13 +122,14 @@ class AacSink(private val file: File, private val bitrate: Int) : PcmSink {
                         return
                     }
                 }
-                else -> if (!endOfStream) return
+                else -> if (!endOfStream || ++idle > MAX_IDLE_DRAINS) return
             }
         }
     }
 
     companion object {
         private const val TIMEOUT_US = 10_000L
+        private const val MAX_IDLE_DRAINS = 100
 
         fun journalFor(file: File) = File(file.parentFile, file.name + ".adts")
     }
