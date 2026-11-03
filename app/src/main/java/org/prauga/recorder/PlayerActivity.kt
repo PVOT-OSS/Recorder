@@ -273,6 +273,15 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
         updatePosition()
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.data != this.intent.data) {
+            controller?.clearMediaItems()
+            setIntent(intent)
+            recreate()
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         updateSpeed()
@@ -391,8 +400,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
                     Toast.makeText(this@PlayerActivity, R.string.edit_failed, Toast.LENGTH_SHORT)
                         .show()
                 } else {
-                    startActivity(intent(this@PlayerActivity, Uri.parse(uri)))
-                    finish()
+                    onNewIntent(intent(this@PlayerActivity, Uri.parse(uri)))
                 }
             }
         }
