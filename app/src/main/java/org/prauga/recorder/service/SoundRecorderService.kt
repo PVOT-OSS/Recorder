@@ -53,6 +53,7 @@ import org.prauga.recorder.repository.RecordingsRepository
 import org.prauga.recorder.utils.LocationHelper
 import org.prauga.recorder.utils.PreferencesManager
 import org.prauga.recorder.utils.RecordIntentHelper
+import org.prauga.recorder.widget.RecorderWidget
 
 class SoundRecorderService : LifecycleService() {
     // System services
@@ -551,6 +552,7 @@ class SoundRecorderService : LifecycleService() {
         if (recording != isRecording) {
             isRecording = recording
             RecordTileService.refresh(this)
+            RecorderWidget.refresh(this)
         }
         notifyClients(MSG_UI_STATUS, newStatus)
     }

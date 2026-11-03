@@ -87,6 +87,18 @@
             android:foregroundServiceType="microphone">
         </service>
 
+        <receiver
+            android:name=".widget.RecorderWidget"
+            android:exported="true"
+            android:label="@string/tile_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_recorder_info" />
+        </receiver>
+
         <service
             android:name=".service.RecordTileService"
             android:exported="true"
