@@ -3,35 +3,68 @@
      SPDX-FileCopyrightText: The LineageOS Project
      SPDX-License-Identifier: Apache-2.0
 -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/titleTextView"
-        style="@style/AppTheme.RecordTitle"
-        android:layout_width="0dp"
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textColor="?android:attr/textColorPrimary"
-        app:layout_constraintBottom_toTopOf="@id/recordingWaveFormView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="@string/main_sound_action" />
+        android:fitsSystemWindows="true"
+        app:liftOnScroll="true">
 
-    <TextView
-        android:id="@+id/elapsedTimeTextView"
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            app:title="@string/app_name"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize" />
+
+        <HorizontalScrollView
+            android:id="@+id/filterScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/filterChipGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true" />
+        </HorizontalScrollView>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ProgressBar
+        android:id="@+id/listLoadingProgressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="28sp"
+        android:layout_gravity="center"
+        tools:visibility="gone" />
+
+    <TextView
+        android:id="@+id/listEmptyTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:drawablePadding="8dp"
+        android:text="@string/list_error_empty"
+        android:textColor="?android:attr/textColorSecondary"
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView"
-        tools:text="12:34"
+        app:drawableTint="?attr/colorOnBackground"
+        app:drawableTopCompat="@drawable/ic_empty_list" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/list_item"
         tools:visibility="visible" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -39,81 +72,12 @@
         style="@style/Widget.Material3.FloatingActionButton.Large.Primary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:clipToPadding="false"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="24dp"
         android:contentDescription="@string/main_sound_action"
         android:src="@drawable/ic_mic"
-        app:backgroundTint="?attr/colorSurface"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:tint="?attr/colorOnSurface" />
+        android:tooltipText="@string/main_sound_action" />
 
-    <org.prauga.recorder.ui.WaveFormView
-        android:id="@+id/recordingWaveFormView"
-        android:layout_width="0dp"
-        android:layout_height="128dp"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:maxAudioValue="@integer/max_audio_value"
-        tools:visibility="visible" />
+    <include layout="@layout/recording_sheet" />
 
-    <TextView
-        android:id="@+id/liveTranscriptTextView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginVertical="16dp"
-        android:accessibilityLiveRegion="polite"
-        android:ellipsize="start"
-        android:gravity="bottom|center_horizontal"
-        android:textAppearance="?attr/textAppearanceTitleMedium"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/floatingActionButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recordingWaveFormView"
-        tools:text="and this is what is being said right now"
-        tools:visibility="visible" />
-
-    <ImageView
-        android:id="@+id/pauseResumeImageView"
-        style="@style/AppTheme.ImageButton"
-        android:contentDescription="@null"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/floatingActionButton"
-        app:layout_constraintEnd_toStartOf="@id/floatingActionButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/floatingActionButton"
-        app:tint="?attr/colorOnBackground"
-        tools:src="@drawable/avd_pause_to_play"
-        tools:visibility="visible" />
-
-    <ImageView
-        android:id="@+id/openSoundListImageView"
-        style="@style/AppTheme.ImageButton"
-        android:contentDescription="@string/sound_last_title"
-        android:tooltipText="@string/sound_last_title"
-        android:src="@drawable/ic_library_music"
-        app:layout_constraintBottom_toBottomOf="@id/floatingActionButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/settingsImageView"
-        app:layout_constraintTop_toTopOf="@id/floatingActionButton"
-        app:tint="?attr/colorOnBackground" />
-
-    <ImageView
-        android:id="@+id/settingsImageView"
-        style="@style/AppTheme.ImageButton"
-        android:contentDescription="@string/settings_title"
-        android:tooltipText="@string/settings_title"
-        android:src="@drawable/ic_settings"
-        app:layout_constraintBottom_toBottomOf="@id/floatingActionButton"
-        app:layout_constraintEnd_toStartOf="@+id/openSoundListImageView"
-        app:layout_constraintStart_toEndOf="@id/floatingActionButton"
-        app:layout_constraintTop_toTopOf="@id/floatingActionButton"
-        app:tint="?attr/colorOnBackground" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

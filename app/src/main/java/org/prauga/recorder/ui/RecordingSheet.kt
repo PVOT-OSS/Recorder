@@ -90,7 +90,8 @@ class RecordingSheet(
             val drawable =
                 ContextCompat.getDrawable(
                     context,
-                    if (paused) R.drawable.avd_pause_to_play else R.drawable.avd_play_to_pause,
+                    // Upstream's drawables are named after the state they leave, not reach
+                    if (paused) R.drawable.avd_play_to_pause else R.drawable.avd_pause_to_play,
                 )
             pauseResume.setImageDrawable(drawable)
             (drawable as? AnimatedVectorDrawable)?.start()

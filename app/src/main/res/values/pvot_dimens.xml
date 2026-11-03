@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <dimen name="fab_margin">24dp</dimen>
+    <!-- Large FAB (96dp) plus its margins, so the last list item can scroll above it -->
+    <dimen name="list_fab_clearance">144dp</dimen>
+</resources>
