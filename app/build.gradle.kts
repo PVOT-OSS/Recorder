@@ -15,10 +15,10 @@ plugins {
 
 android {
     compileSdk = 36
-    namespace = "org.lineageos.recorder"
+    namespace = "org.prauga.recorder"
 
     defaultConfig {
-        applicationId = "org.lineageos.recorder"
+        applicationId = "org.prauga.recorder"
         minSdk = 31
         targetSdk = 36
         versionCode = 1

@@ -49,7 +49,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:tint="?attr/colorOnSurface" />
 
-    <org.lineageos.recorder.ui.WaveFormView
+    <org.prauga.recorder.ui.WaveFormView
         android:id="@+id/recordingWaveFormView"
         android:layout_width="0dp"
         android:layout_height="128dp"
