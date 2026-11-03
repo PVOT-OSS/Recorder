@@ -24,6 +24,7 @@ android {
 
     buildTypes {
         getByName("release") {
+            resValue("string", "application_id", "org.prauga.recorder")
             // Enables code shrinking, obfuscation, and optimization.
             isMinifyEnabled = true
 
@@ -35,8 +36,13 @@ android {
                 )
             )
         }
-        getByName("debug") { applicationIdSuffix = ".dev" }
+        getByName("debug") {
+            applicationIdSuffix = ".dev"
+            resValue("string", "application_id", "org.prauga.recorder.dev")
+        }
     }
+
+    buildFeatures { resValues = true }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

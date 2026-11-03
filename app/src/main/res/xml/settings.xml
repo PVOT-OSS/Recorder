@@ -3,7 +3,8 @@
      SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
      SPDX-License-Identifier: Apache-2.0
 -->
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
@@ -46,6 +47,34 @@
             app:key="tag_with_location"
             app:summary="@string/settings_location_message"
             app:title="@string/settings_location" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/settings_category_transcription">
+
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:key="transcribe"
+            app:summary="@string/settings_transcribe_summary"
+            app:title="@string/settings_transcribe" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="models"
+            app:summary="@string/settings_models_summary"
+            app:title="@string/settings_models">
+            <intent
+                android:targetClass="org.prauga.recorder.transcription.ModelsActivity"
+                android:targetPackage="@string/application_id" />
+        </Preference>
+
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:key="models_wifi_only"
+            app:title="@string/settings_wifi_only" />
     </PreferenceCategory>
 
     <PreferenceCategory

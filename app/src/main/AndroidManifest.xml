@@ -69,6 +69,11 @@
             android:parentActivityName=".RecorderActivity" />
 
         <activity
+            android:name=".transcription.ModelsActivity"
+            android:label="@string/models_title"
+            android:parentActivityName=".SettingsActivity" />
+
+        <activity
             android:name=".TrashActivity"
             android:label="@string/trash_title"
             android:parentActivityName=".ListActivity" />

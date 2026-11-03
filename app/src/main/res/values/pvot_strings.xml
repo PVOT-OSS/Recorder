@@ -16,6 +16,22 @@
     <string name="guard_thermal">The phone is too hot</string>
     <string name="mic_silenced">Another app is using the microphone. This part is silent</string>
 
+    <!-- Transcription -->
+    <string name="settings_category_transcription">Transcription</string>
+    <string name="settings_transcribe">Transcribe recordings</string>
+    <string name="settings_transcribe_summary">Live while recording and afterwards, entirely on this phone</string>
+    <string name="settings_models">Languages and models</string>
+    <string name="settings_models_summary">Download speech models for the languages you record in</string>
+    <string name="settings_wifi_only">Download models on Wi-Fi only</string>
+    <string name="models_title">Speech models</string>
+    <string name="models_summary">Open models from alphacephei.com, run offline</string>
+    <string name="models_speaker">Speaker labels</string>
+    <string name="models_installed">Installed</string>
+    <string name="models_downloading">Downloading %1$s…</string>
+    <string name="models_installing">Installing…</string>
+    <string name="models_failed">Download failed</string>
+    <string name="models_download">Download</string>
+
     <!-- Player -->
     <string name="player_waveform">Playback position</string>
     <string name="player_speed">Playback speed</string>
