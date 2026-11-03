@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:id="@+id/playerContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:id="@+id/playerPane"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:id="@+id/subtitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawablePadding="4dp"
+                android:gravity="center_vertical"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?android:attr/textColorSecondary"
+                app:drawableTint="?android:attr/textColorSecondary"
+                tools:text="3 Nov 2026, 23:44 · Bengaluru" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/tagChipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
+            <org.prauga.recorder.ui.PlaybackWaveformView
+                android:id="@+id/waveformView"
+                android:layout_width="match_parent"
+                android:layout_height="128dp"
+                android:layout_marginTop="16dp"
+                android:contentDescription="@string/player_waveform" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/positionTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                    tools:text="0:12" />
+
+                <TextView
+                    android:id="@+id/durationTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                    android:textColor="?android:attr/textColorSecondary"
+                    tools:text="3:45" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/controlsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/speedButton"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:contentDescription="@string/player_speed"
+                    android:minWidth="64dp"
+                    tools:text="1×" />
+
+                <ImageButton
+                    android:id="@+id/rewindButton"
+                    style="@style/AppTheme.PlayerButton"
+                    android:contentDescription="@string/player_rewind"
+                    android:src="@drawable/ic_replay" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/playPauseButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="12dp"
+                    android:contentDescription="@string/play"
+                    android:src="@drawable/ic_play_arrow" />
+
+                <ImageButton
+                    android:id="@+id/forwardButton"
+                    style="@style/AppTheme.PlayerButton"
+                    android:contentDescription="@string/player_forward"
+                    android:src="@drawable/ic_forward" />
+
+                <Button
+                    android:id="@+id/skipSilenceButton"
+                    style="?attr/materialIconButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:checkable="true"
+                    android:contentDescription="@string/player_skip_silence"
+                    android:tooltipText="@string/player_skip_silence"
+                    app:icon="@drawable/ic_fast_forward" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/editBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/selectionTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    tools:text="0:10 – 0:42" />
+
+                <Button
+                    android:id="@+id/removeButton"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/edit_remove" />
+
+                <Button
+                    android:id="@+id/trimButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/edit_trim" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/detailContainer"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
