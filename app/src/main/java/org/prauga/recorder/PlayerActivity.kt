@@ -47,6 +47,7 @@ import org.prauga.recorder.audio.WaveformExtractor
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.playback.PlaybackService
 import org.prauga.recorder.repository.RecordingsRepository
+import org.prauga.recorder.transcription.TranscriptExport
 import org.prauga.recorder.ui.LabelsDialog
 import org.prauga.recorder.ui.PlaybackWaveformView
 import org.prauga.recorder.ui.RenameDialog
@@ -314,6 +315,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
         val favourite = recording?.favourite == true
         val hasTranscript = transcriptPane.hasTranscript
         menu.findItem(R.id.action_search_transcript)?.isVisible = hasTranscript
+        menu.findItem(R.id.action_export_transcript)?.isVisible = hasTranscript
         menu.findItem(R.id.action_transcribe)?.isVisible = recording != null
         menu.findItem(R.id.action_favourite)?.apply {
             setIcon(if (favourite) R.drawable.ic_star else R.drawable.ic_star_border)
@@ -350,6 +352,7 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
                 }
             R.id.action_transcribe -> transcriptPane.transcribe()
             R.id.action_search_transcript -> transcriptPane.showSearch(true)
+            R.id.action_export_transcript -> exportTranscript(recording)
             R.id.action_edit -> setEditMode(!waveformView.selectionEnabled)
             R.id.action_share ->
                 startActivity(RecordIntentHelper.getShareIntent(recording.uri, recording.mimeType))
@@ -378,6 +381,30 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
             else -> return onExtraMenuItem(item) || super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun exportTranscript(recording: Recording) {
+        val formats = TranscriptExport.Format.entries
+        val labels =
+            arrayOf(
+                getString(R.string.transcript_export_text),
+                getString(R.string.transcript_export_srt),
+                getString(R.string.transcript_export_vtt),
+            )
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.transcript_export)
+            .setItems(labels) { _, which ->
+                startActivity(
+                    TranscriptExport.shareIntent(
+                        this,
+                        recording.title.substringBeforeLast('.'),
+                        transcriptPane.transcript,
+                        formats[which],
+                        transcriptPane::speakerName,
+                    )
+                )
+            }
+            .show()
     }
 
     private fun setEditMode(enabled: Boolean) {

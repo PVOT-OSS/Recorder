@@ -28,6 +28,9 @@
         android:icon="@drawable/ic_search"
         android:title="@string/transcript_search" />
     <item
+        android:id="@+id/action_export_transcript"
+        android:title="@string/transcript_export" />
+    <item
         android:id="@+id/action_transcribe"
         android:title="@string/transcribe" />
     <item
