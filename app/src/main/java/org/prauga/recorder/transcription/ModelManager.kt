@@ -107,6 +107,15 @@ object ModelManager {
         _changes.update { it + 1 }
     }
 
+    /** Installs any finished download whose completion broadcast we missed. */
+    suspend fun completePending(context: Context) {
+        for (model in Models.ALL) {
+            if (state(context, model) == State.Installing) {
+                onDownloadComplete(context, prefs(context).getLong(model.id, -1))
+            }
+        }
+    }
+
     /** Called when DownloadManager finishes [downloadId]; unpacks it if it's one of ours. */
     suspend fun onDownloadComplete(context: Context, downloadId: Long) =
         withContext(Dispatchers.IO) {

@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.prauga.recorder.audio.RecordingRepair
+import org.prauga.recorder.transcription.ModelManager
 import org.prauga.recorder.utils.PreferencesManager
 
 class RecorderApplication : Application() {
@@ -25,6 +26,7 @@ class RecorderApplication : Application() {
 
         // No recording can be running yet: whatever is left in the work dir was interrupted
         appScope.launch { RecordingRepair.repairAll(this@RecorderApplication) }
+        appScope.launch { ModelManager.completePending(this@RecorderApplication) }
     }
 
     companion object {

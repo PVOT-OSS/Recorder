@@ -61,8 +61,9 @@ class ModelsActivity : AppCompatActivity(org.prauga.recorder.R.layout.activity_l
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { ModelManager.changes.collect { adapter.refresh() } }
                 while (true) {
-                    delay(1000)
+                    ModelManager.completePending(this@ModelsActivity)
                     adapter.refresh()
+                    delay(1000)
                 }
             }
         }
