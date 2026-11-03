@@ -160,7 +160,7 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
             )
             return
         }
-        TranscriptionService.enqueue(activity, recording.uri)
+        TranscriptionService.enqueue(activity, recording.uri, force = true)
         updateEmpty(0f)
     }
 

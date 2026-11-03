@@ -50,6 +50,10 @@ import org.prauga.recorder.RecorderActivity
 import org.prauga.recorder.audio.EngineRecorder
 import org.prauga.recorder.models.UiStatus
 import org.prauga.recorder.repository.RecordingsRepository
+import org.prauga.recorder.transcription.LiveTranscriptionSink
+import org.prauga.recorder.transcription.SpeechSession
+import org.prauga.recorder.transcription.Transcriber
+import org.prauga.recorder.transcription.TranscriptionService
 import org.prauga.recorder.utils.LocationHelper
 import org.prauga.recorder.utils.PreferencesManager
 import org.prauga.recorder.utils.RecordIntentHelper
@@ -82,6 +86,7 @@ class SoundRecorderService : LifecycleService() {
     private val messenger = Messenger(handler)
     private var recorder: SoundRecording? = null
     private var recordFile: File? = null
+    private var liveTranscription: LiveTranscriptionSink? = null
     private var recordLocation: android.location.Location? = null
     private val locationHelper by lazy { LocationHelper(this) }
     private var amplitudeTimer: Timer? = null
@@ -210,6 +215,15 @@ class SoundRecorderService : LifecycleService() {
                 preferredInputDevice(),
                 preferencesManager.clearVoice,
             )
+        liveTranscription =
+            if (preferencesManager.transcribe) {
+                SpeechSession.open(this)?.let { session ->
+                    LiveTranscriptionSink(session) { text ->
+                        handler.post { notifyClients(MSG_TRANSCRIPT, text) }
+                    }
+                }
+            } else null
+        liveTranscription?.let { (recorder as EngineRecorder).extraSinks.add(it) }
 
         return recorder?.let { recorder ->
             val file =
@@ -279,6 +293,7 @@ class SoundRecorderService : LifecycleService() {
                         )
                         ?.also { uri ->
                             saveLocation(uri, it.name)
+                            analyse(uri, it.name)
                             onRecordCompleted(uri)
                         } ?: run { Log.e(TAG, "Failed to save recording") }
                 }
@@ -326,6 +341,27 @@ class SoundRecorderService : LifecycleService() {
                 .setAutoCancel(true)
                 .build(),
         )
+    }
+
+    /** Saves the live transcript, then queues the remaining analysis (or the transcription). */
+    private fun analyse(uri: String, title: String) {
+        val live = liveTranscription
+        liveTranscription = null
+        val contentUri = Uri.parse(uri)
+        val utterances = live?.utterances.orEmpty()
+        if (utterances.isNotEmpty()) {
+            org.prauga.recorder.RecorderApplication.appScope.launch {
+                Transcriber.save(
+                    applicationContext,
+                    android.content.ContentUris.parseId(contentUri),
+                    title,
+                    utterances,
+                )
+                TranscriptionService.enqueue(applicationContext, contentUri)
+            }
+        } else if (preferencesManager.transcribe) {
+            TranscriptionService.enqueue(this, contentUri)
+        }
     }
 
     private fun saveLocation(uri: String, title: String) {
@@ -733,6 +769,7 @@ class SoundRecorderService : LifecycleService() {
         const val MSG_UI_STATUS = 2
         const val MSG_SOUND_AMPLITUDE = 3
         const val MSG_TIME_ELAPSED = 4
+        const val MSG_TRANSCRIPT = 5
 
         const val EXTRA_FILE_NAME = "extra_filename"
         private const val LEGACY_MUSIC_DIR = "Sound records"

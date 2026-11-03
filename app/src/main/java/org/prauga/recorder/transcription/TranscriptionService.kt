@@ -29,7 +29,7 @@ import org.prauga.recorder.repository.RecordingsRepository
 
 /** Runs queued post-recording analysis (transcription now, more later) in the foreground. */
 class TranscriptionService : LifecycleService() {
-    private val queue = Channel<Uri>(Channel.UNLIMITED)
+    private val queue = Channel<Pair<Uri, Boolean>>(Channel.UNLIMITED)
     private val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
     private var pending = 0
 
@@ -51,8 +51,8 @@ class TranscriptionService : LifecycleService() {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         )
         lifecycleScope.launch {
-            for (uri in queue) {
-                process(uri)
+            for ((uri, force) in queue) {
+                process(uri, force)
                 if (--pending == 0) {
                     stopSelf()
                 }
@@ -65,19 +65,19 @@ class TranscriptionService : LifecycleService() {
         val uri = intent?.data
         if (uri != null) {
             pending++
-            queue.trySend(uri)
+            queue.trySend(uri to intent.getBooleanExtra(EXTRA_FORCE, false))
         } else if (pending == 0) {
             stopSelf()
         }
         return START_NOT_STICKY
     }
 
-    private suspend fun process(uri: Uri) {
+    private suspend fun process(uri: Uri, force: Boolean) {
         val recording = RecordingsRepository.recording(this, uri) ?: return
         val title = recording.title.substringBeforeLast('.')
         _progress.update { it + (recording.id to 0f) }
         try {
-            Analysis.run(this, recording) { fraction ->
+            Analysis.run(this, recording, force) { fraction ->
                 _progress.update { it + (recording.id to fraction) }
                 notificationManager.notify(NOTIFICATION_ID, notification(title, fraction))
             }
@@ -116,10 +116,14 @@ class TranscriptionService : LifecycleService() {
         /** Recording id → progress of the analysis currently running or queued. */
         val progress = _progress.asStateFlow()
 
-        fun enqueue(context: Context, uri: Uri) {
+        private const val EXTRA_FORCE = "force"
+
+        fun enqueue(context: Context, uri: Uri, force: Boolean = false) {
             ContextCompat.startForegroundService(
                 context,
-                Intent(context, TranscriptionService::class.java).setData(uri),
+                Intent(context, TranscriptionService::class.java)
+                    .setData(uri)
+                    .putExtra(EXTRA_FORCE, force),
             )
         }
     }

@@ -70,6 +70,9 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     }
     private val settingsImageView by lazy { findViewById<ImageView>(R.id.settingsImageView) }
     private val titleTextView by lazy { findViewById<TextView>(R.id.titleTextView) }
+    private val liveTranscriptTextView by lazy {
+        findViewById<TextView>(R.id.liveTranscriptTextView)
+    }
 
     private val locationHelper by lazy { LocationHelper(this) }
     private val permissionManager by lazy { PermissionManager(this) }
@@ -89,6 +92,7 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
                         SoundRecorderService.MSG_SOUND_AMPLITUDE ->
                             setVisualizerAmplitude(msg.obj as Int)
                         SoundRecorderService.MSG_TIME_ELAPSED -> setElapsedTime(msg.obj as Long)
+                        SoundRecorderService.MSG_TRANSCRIPT -> setLiveTranscript(msg.obj as String)
                         else -> super.handleMessage(msg)
                     }
                 }
@@ -206,6 +210,12 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
         recordingWaveFormView.post { recordingWaveFormView.setAmplitude(amplitude) }
     }
 
+    private fun setLiveTranscript(text: String) {
+        liveTranscriptTextView.isVisible = text.isNotBlank() && uiStatus != UiStatus.READY
+        // Keep the tail: the view shows the most recent words at the bottom
+        liveTranscriptTextView.text = text.takeLast(LIVE_TRANSCRIPT_CHARS)
+    }
+
     private fun setElapsedTime(seconds: Long) {
         elapsedTimeText.post { elapsedTimeText.text = DateUtils.formatElapsedTime(seconds) }
     }
@@ -257,6 +267,8 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     private fun applyUiStatus(status: UiStatus) {
         uiStatus = status
         if (UiStatus.READY == status) {
+            liveTranscriptTextView.isVisible = false
+            liveTranscriptTextView.text = null
             titleTextView.text = getString(R.string.main_sound_action)
             floatingActionButton.setImageResource(R.drawable.ic_mic)
             elapsedTimeText.isVisible = false
@@ -388,6 +400,7 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
         const val ACTION_STOP_RECORDING = "org.prauga.recorder.action.STOP_RECORDING"
         const val ACTION_TOGGLE_RECORDING = "org.prauga.recorder.action.TOGGLE_RECORDING"
 
+        private const val LIVE_TRANSCRIPT_CHARS = 280
         private const val FILE_NAME_BASE = "%1\$s (%2\$s)"
         private const val FILE_NAME_FALLBACK = "Sound record"
     }
