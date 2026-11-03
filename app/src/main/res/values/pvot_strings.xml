@@ -26,6 +26,7 @@
     <string name="models_title">Speech models</string>
     <string name="models_summary">Open models from alphacephei.com, run offline</string>
     <string name="models_speaker">Speaker labels</string>
+    <string name="models_tagger">Sound labels (music, applause, laughter…)</string>
     <string name="models_installed">Installed</string>
     <string name="models_downloading">Downloading %1$s…</string>
     <string name="models_installing">Installing…</string>

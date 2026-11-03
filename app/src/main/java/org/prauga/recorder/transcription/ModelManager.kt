@@ -56,6 +56,12 @@ object ModelManager {
 
     fun speakerModel(context: Context) = Models.SPEAKER.takeIf { isInstalled(context, it) }
 
+    fun taggerFile(context: Context) =
+        Models.TAGGER.takeIf { isInstalled(context, it) }
+            ?.let { File(dir(context, it), TAGGER_FILE) }
+
+    const val TAGGER_FILE = "model.tflite"
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun state(context: Context, model: SpeechModel): State {
@@ -128,7 +134,15 @@ object ModelManager {
                     Log.e(TAG, "Download of ${model.id} failed or has the wrong size")
                     return@withContext
                 }
-                unzip(zip, dir(context, model))
+                if (model.isArchive) {
+                    unzip(zip, dir(context, model))
+                } else {
+                    dir(context, model).apply {
+                        deleteRecursively()
+                        mkdirs()
+                    }
+                    zip.copyTo(File(dir(context, model), TAGGER_FILE))
+                }
                 File(dir(context, model), ".complete").createNewFile()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to install ${model.id}", e)

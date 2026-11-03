@@ -76,6 +76,9 @@ dependencies {
     implementation("com.alphacephei:vosk-android:0.3.75")
     implementation("net.java.dev.jna:jna:5.18.1@aar")
 
+    // Sound tagging (YAMNet, downloaded at runtime)
+    implementation("org.tensorflow:tensorflow-lite:2.17.0")
+
     // Recyclerview
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.recyclerview:recyclerview-selection:1.1.0")

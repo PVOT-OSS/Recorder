@@ -24,3 +24,6 @@
 -keep class * implements com.sun.jna.** { *; }
 -keep class org.vosk.** { *; }
 -dontwarn java.awt.**
+
+# TensorFlow Lite looks up its Java classes from native code
+-keep class org.tensorflow.lite.** { *; }

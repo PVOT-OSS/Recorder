@@ -18,15 +18,33 @@ object Analysis {
         force: Boolean,
         onProgress: (Float) -> Unit,
     ) {
-        val hasTranscript = RecordingsDatabase.get(context).segments(recording.id).isNotEmpty()
-        if (hasTranscript && !force) return
-        Transcriber.transcribe(
-            context,
-            recording.id,
-            recording.uri,
-            recording.title,
-            recording.duration,
-            onProgress,
-        )
+        val db = RecordingsDatabase.get(context)
+        val transcribe = force || db.segments(recording.id).isEmpty()
+        val tag =
+            ModelManager.taggerFile(context) != null && (force || db.tags(recording.id).isEmpty())
+        val steps = listOf(transcribe, tag).count { it }.coerceAtLeast(1)
+        var done = 0
+        if (transcribe) {
+            Transcriber.transcribe(
+                context,
+                recording.id,
+                recording.uri,
+                recording.title,
+                recording.duration,
+            ) {
+                onProgress((done + it) / steps)
+            }
+            done++
+        }
+        if (tag) {
+            SoundTagger.tag(
+                context,
+                recording.id,
+                recording.uri,
+                recording.title,
+                { onProgress((done + it) / steps) },
+                recording.duration,
+            )
+        }
     }
 }

@@ -76,7 +76,7 @@ class ModelsActivity : AppCompatActivity(org.prauga.recorder.R.layout.activity_l
         } else super.onOptionsItemSelected(item)
 
     private inner class Adapter : RecyclerView.Adapter<Adapter.Holder>() {
-        private val models = Models.SPEECH + Models.SPEAKER
+        private val models = Models.SPEECH + Models.SPEAKER + Models.TAGGER
         private var states = models.map { ModelManager.State.NotInstalled as ModelManager.State }
 
         fun refresh() {
@@ -105,7 +105,11 @@ class ModelsActivity : AppCompatActivity(org.prauga.recorder.R.layout.activity_l
             fun bind(model: SpeechModel, state: ModelManager.State) {
                 val context = itemView.context
                 title.text =
-                    if (model.isSpeaker) getString(R.string.models_speaker) else model.language
+                    when {
+                        model.isSpeaker -> getString(R.string.models_speaker)
+                        model.isTagger -> getString(R.string.models_tagger)
+                        else -> model.language
+                    }
                 val size = Formatter.formatShortFileSize(context, model.size)
                 summary.text =
                     when (state) {
@@ -125,13 +129,15 @@ class ModelsActivity : AppCompatActivity(org.prauga.recorder.R.layout.activity_l
                 } else {
                     progress.isIndeterminate = true
                 }
-                radio.isVisible = !model.isSpeaker
+                radio.isVisible = !model.isSpeaker && !model.isTagger
                 radio.isEnabled = state == ModelManager.State.Installed
                 radio.isChecked =
                     state == ModelManager.State.Installed &&
                         ModelManager.speechModel(context)?.id == model.id
                 itemView.setOnClickListener {
-                    if (!model.isSpeaker && state == ModelManager.State.Installed) {
+                    if (
+                        !model.isSpeaker && !model.isTagger && state == ModelManager.State.Installed
+                    ) {
                         preferences.speechModel = model.id
                         notifyDataSetChanged()
                     }
@@ -162,7 +168,11 @@ class ModelsActivity : AppCompatActivity(org.prauga.recorder.R.layout.activity_l
                         else -> {
                             ModelManager.cancel(context, model)
                             ModelManager.download(context, model, preferences.downloadOnWifiOnly)
-                            if (!model.isSpeaker && ModelManager.speechModel(context) == null) {
+                            if (
+                                !model.isSpeaker &&
+                                    !model.isTagger &&
+                                    ModelManager.speechModel(context) == null
+                            ) {
                                 preferences.speechModel = model.id
                             }
                         }

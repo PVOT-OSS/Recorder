@@ -14,9 +14,15 @@ data class SpeechModel(
     val language: String,
     val size: Long,
     val isSpeaker: Boolean = false,
+    val isTagger: Boolean = false,
+    private val sourceUrl: String? = null,
 ) {
     val url
-        get() = "https://alphacephei.com/vosk/models/$id.zip"
+        get() = sourceUrl ?: "https://alphacephei.com/vosk/models/$id.zip"
+
+    /** Vosk models come zipped; the tagger is a single .tflite file. */
+    val isArchive
+        get() = sourceUrl == null
 }
 
 object Models {
@@ -37,7 +43,20 @@ object Models {
             SpeechModel("vosk-model-small-ja-0.22", "日本語", 49_704_573),
         )
 
-    val ALL = SPEECH + SPEAKER
+    /** YAMNet (Apache-2.0, TensorFlow Hub) with its 521 AudioSet labels embedded. */
+    val TAGGER =
+        SpeechModel(
+            "yamnet-classification-1",
+            "Sound labels",
+            4_126_810,
+            isTagger = true,
+            sourceUrl =
+                "https://storage.googleapis.com/download.tensorflow.org/models/tflite/" +
+                    "task_library/audio_classification/android/" +
+                    "lite-model_yamnet_classification_tflite_1.tflite",
+        )
+
+    val ALL = SPEECH + SPEAKER + TAGGER
 
     fun byId(id: String?) = ALL.firstOrNull { it.id == id }
 }

@@ -51,6 +51,7 @@ import org.prauga.recorder.audio.EngineRecorder
 import org.prauga.recorder.models.UiStatus
 import org.prauga.recorder.repository.RecordingsRepository
 import org.prauga.recorder.transcription.LiveTranscriptionSink
+import org.prauga.recorder.transcription.ModelManager
 import org.prauga.recorder.transcription.SpeechSession
 import org.prauga.recorder.transcription.Transcriber
 import org.prauga.recorder.transcription.TranscriptionService
@@ -359,7 +360,7 @@ class SoundRecorderService : LifecycleService() {
                 )
                 TranscriptionService.enqueue(applicationContext, contentUri)
             }
-        } else if (preferencesManager.transcribe) {
+        } else if (preferencesManager.transcribe || ModelManager.taggerFile(this) != null) {
             TranscriptionService.enqueue(this, contentUri)
         }
     }
