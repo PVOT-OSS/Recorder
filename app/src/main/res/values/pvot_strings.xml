@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <!-- Settings -->
+    <string name="settings_category_recording">Recording</string>
+    <string name="settings_category_appearance">Appearance</string>
+    <string name="settings_category_about">About</string>
+    <string name="settings_quality">Audio quality</string>
+    <string name="settings_quality_standard">Standard (AAC, 32 kHz, 48 kbps)</string>
+    <string name="settings_quality_high_aac">High (AAC, 48 kHz, 192 kbps)</string>
+    <string name="settings_quality_lossless">Lossless (WAV, 48 kHz)</string>
+    <string name="settings_stereo">Record in stereo</string>
+    <string name="settings_stereo_summary">Uses two microphones when available. Standard quality is always mono</string>
+    <string name="settings_clear_voice">Clear voice</string>
+    <string name="settings_clear_voice_summary">Reduce background noise and level the volume while recording</string>
+    <string name="settings_microphone">Microphone</string>
+    <string name="settings_microphone_auto">Automatic</string>
+    <string name="settings_location">Tag recordings with location</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_disabled_while_recording">Can\'t be changed while recording</string>
+</resources>

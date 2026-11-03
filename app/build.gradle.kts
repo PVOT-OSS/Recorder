@@ -61,6 +61,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.preference:preference-ktx:1.2.1")
 
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")

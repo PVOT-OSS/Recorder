@@ -7,6 +7,7 @@ package org.prauga.recorder.utils
 
 import android.content.Context
 import android.net.Uri
+import androidx.appcompat.app.AppCompatDelegate
 import org.prauga.recorder.audio.QualityPreset
 
 class PreferencesManager(context: Context) {
@@ -52,6 +53,9 @@ class PreferencesManager(context: Context) {
             preferences.edit().putBoolean(PREF_TAG_WITH_LOCATION, tagWithLocation).apply()
         }
 
+    val theme: String?
+        get() = preferences.getString(PREF_THEME, null)
+
     var onboardSettingsCounter: Int
         get() = preferences.getInt(PREF_ONBOARD_SETTINGS_COUNTER, 0)
         set(value) {
@@ -74,8 +78,19 @@ class PreferencesManager(context: Context) {
         }
 
     companion object {
-        private const val PREFS = "preferences"
-        private const val PREF_TAG_WITH_LOCATION = "tag_with_location"
+        const val PREFS = "preferences"
+        const val PREF_TAG_WITH_LOCATION = "tag_with_location"
+        const val PREF_THEME = "theme"
+
+        fun applyTheme(value: String?) =
+            AppCompatDelegate.setDefaultNightMode(
+                when (value) {
+                    "light" -> AppCompatDelegate.MODE_NIGHT_NO
+                    "dark" -> AppCompatDelegate.MODE_NIGHT_YES
+                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
+            )
+
         private const val PREF_RECORDING_QUALITY = "recording_quality"
         const val PREF_QUALITY_PRESET = "quality_preset"
         const val PREF_STEREO = "stereo"

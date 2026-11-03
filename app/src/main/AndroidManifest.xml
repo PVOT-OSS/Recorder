@@ -54,6 +54,11 @@
             android:parentActivityName=".RecorderActivity" />
 
         <activity
+            android:name=".SettingsActivity"
+            android:label="@string/settings_title"
+            android:parentActivityName=".RecorderActivity" />
+
+        <activity
             android:name=".DialogActivity"
             android:excludeFromRecents="true"
             android:theme="@style/AppTheme.DialogActivity" />

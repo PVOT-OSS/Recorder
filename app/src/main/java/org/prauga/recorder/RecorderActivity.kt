@@ -324,8 +324,8 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
 
     private fun openSettings() {
         val intent =
-            Intent(this, DialogActivity::class.java)
-                .putExtra(DialogActivity.EXTRA_IS_RECORDING, uiStatus != UiStatus.READY)
+            Intent(this, SettingsActivity::class.java)
+                .putExtra(SettingsActivity.EXTRA_IS_RECORDING, uiStatus != UiStatus.READY)
         startActivity(intent)
     }
 
