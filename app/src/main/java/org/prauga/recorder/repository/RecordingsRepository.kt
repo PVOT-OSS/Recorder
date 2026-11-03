@@ -12,6 +12,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.core.os.bundleOf
 import java.io.File
@@ -100,6 +101,30 @@ object RecordingsRepository {
 
     fun knownLabels(context: Context): List<String> =
         RecordingsDatabase.get(context).metadata().values.flatMap { it.labels }.distinct()
+
+    /** Copies a picked document into the recordings collection. */
+    suspend fun import(context: Context, source: Uri): String? =
+        withContext(Dispatchers.IO) {
+            val resolver = context.contentResolver
+            val name =
+                resolver
+                    .query(source, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+                    ?.use { if (it.moveToFirst()) it.getString(0) else null }
+                    ?: "Imported ${System.currentTimeMillis()}"
+            val mimeType = resolver.getType(source) ?: "audio/*"
+            val dir = File(context.cacheDir, "imports").apply { mkdirs() }
+            val file = File(dir, name.replace('/', '_'))
+            try {
+                resolver.openInputStream(source)?.use { input ->
+                    file.outputStream().use { input.copyTo(it) }
+                } ?: return@withContext null
+                addRecordingToContentProvider(context, file, mimeType)
+            } catch (e: IOException) {
+                Log.e(LOG_TAG, "Failed to import $source", e)
+                file.delete()
+                null
+            }
+        }
 
     fun trashed(context: Context) = RecordingsFlow(context, trashed = true).flowData()
 

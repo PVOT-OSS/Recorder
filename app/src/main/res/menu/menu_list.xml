@@ -16,6 +16,12 @@
         app:showAsAction="ifRoom|collapseActionView" />
 
     <item
+        android:id="@+id/action_import"
+        android:icon="@drawable/ic_file_upload"
+        android:title="@string/import_audio"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_trash"
         android:title="@string/trash_title"
         app:showAsAction="never" />

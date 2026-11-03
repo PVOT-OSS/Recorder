@@ -14,6 +14,8 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -182,6 +184,21 @@ class ListActivity : AppCompatActivity() {
         }
     }
 
+    private val importLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+            if (uris.isEmpty()) return@registerForActivityResult
+            lifecycleScope.launch {
+                val count =
+                    uris.count { RecordingsRepository.import(this@ListActivity, it) != null }
+                Toast.makeText(
+                        this@ListActivity,
+                        resources.getQuantityString(R.plurals.import_done, count, count),
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -345,6 +362,11 @@ class ListActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) =
         when (item.itemId) {
+            R.id.action_import -> {
+                importLauncher.launch(arrayOf("audio/*"))
+                true
+            }
+
             R.id.action_trash -> {
                 startActivity(Intent(this, TrashActivity::class.java))
                 true

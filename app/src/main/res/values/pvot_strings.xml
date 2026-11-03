@@ -31,6 +31,13 @@
     <string name="filter_favourites">Favourites</string>
     <string name="list_no_results">No recordings match</string>
 
+    <!-- Import -->
+    <string name="import_audio">Import audio</string>
+    <plurals name="import_done">
+        <item quantity="one">Imported %d recording</item>
+        <item quantity="other">Imported %d recordings</item>
+    </plurals>
+
     <!-- Trash -->
     <string name="trash_title">Trash</string>
     <string name="trash_empty">Trash is empty</string>
