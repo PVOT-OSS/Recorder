@@ -222,7 +222,7 @@ class ListActivity : AppCompatActivity() {
     }
 
     fun onPlay(recording: Recording) {
-        startActivity(RecordIntentHelper.getOpenIntent(recording.uri, TYPE_AUDIO))
+        startActivity(PlayerActivity.intent(this, recording.uri))
     }
 
     fun onShare(recording: Recording) {

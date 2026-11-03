@@ -55,6 +55,11 @@
             android:parentActivityName=".RecorderActivity" />
 
         <activity
+            android:name=".PlayerActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".ListActivity" />
+
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/settings_title"
             android:parentActivityName=".RecorderActivity" />

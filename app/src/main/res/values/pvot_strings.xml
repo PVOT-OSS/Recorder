@@ -4,6 +4,22 @@
      SPDX-License-Identifier: Apache-2.0
 -->
 <resources>
+    <!-- Player -->
+    <string name="player_waveform">Playback position</string>
+    <string name="player_speed">Playback speed</string>
+    <string name="player_speed_value">%1$s×</string>
+    <string name="player_rewind">Back 5 seconds</string>
+    <string name="player_forward">Forward 10 seconds</string>
+    <string name="player_skip_silence">Skip silence</string>
+    <string name="player_not_found">Recording not found</string>
+    <string name="favourite">Favourite</string>
+    <string name="unfavourite">Remove from favourites</string>
+
+    <!-- Editing -->
+    <string name="edit_title">Edit</string>
+    <string name="edit_trim">Keep selection</string>
+    <string name="edit_remove">Remove selection</string>
+
     <!-- Rename -->
     <string name="rename_suggest">Suggest</string>
 

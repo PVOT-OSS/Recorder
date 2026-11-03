@@ -53,6 +53,18 @@ class PreferencesManager(context: Context) {
             preferences.edit().putBoolean(PREF_TAG_WITH_LOCATION, tagWithLocation).apply()
         }
 
+    var playbackSpeed: Float
+        get() = preferences.getFloat(PREF_PLAYBACK_SPEED, 1f)
+        set(value) {
+            preferences.edit().putFloat(PREF_PLAYBACK_SPEED, value).apply()
+        }
+
+    var skipSilence: Boolean
+        get() = preferences.getBoolean(PREF_SKIP_SILENCE, false)
+        set(value) {
+            preferences.edit().putBoolean(PREF_SKIP_SILENCE, value).apply()
+        }
+
     val theme: String?
         get() = preferences.getString(PREF_THEME, null)
 
@@ -81,6 +93,8 @@ class PreferencesManager(context: Context) {
         const val PREFS = "preferences"
         const val PREF_TAG_WITH_LOCATION = "tag_with_location"
         const val PREF_THEME = "theme"
+        private const val PREF_PLAYBACK_SPEED = "playback_speed"
+        private const val PREF_SKIP_SILENCE = "skip_silence"
 
         fun applyTheme(value: String?) =
             AppCompatDelegate.setDefaultNightMode(

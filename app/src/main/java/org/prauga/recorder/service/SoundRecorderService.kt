@@ -41,6 +41,7 @@ import java.util.Timer
 import java.util.TimerTask
 import kotlinx.coroutines.launch
 import org.prauga.recorder.ListActivity
+import org.prauga.recorder.PlayerActivity
 import org.prauga.recorder.R
 import org.prauga.recorder.RecorderActivity
 import org.prauga.recorder.audio.EngineRecorder
@@ -526,7 +527,7 @@ class SoundRecorderService : LifecycleService() {
             PendingIntent.getActivity(
                 this,
                 0,
-                RecordIntentHelper.getOpenIntent(fileUri, mimeType),
+                PlayerActivity.intent(this, fileUri),
                 PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
 

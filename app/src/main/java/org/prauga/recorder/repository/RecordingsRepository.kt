@@ -8,6 +8,7 @@ package org.prauga.recorder.repository
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
@@ -50,6 +51,42 @@ object RecordingsRepository {
             }
         }
     }
+
+    /** One recording by content [uri], merged with its metadata, or null if it's gone. */
+    suspend fun recording(context: Context, uri: Uri): Recording? =
+        withContext(Dispatchers.IO) {
+            val projection =
+                arrayOf(
+                    MediaStore.Audio.Media._ID,
+                    MediaStore.Audio.Media.DISPLAY_NAME,
+                    MediaStore.Audio.Media.DATE_ADDED,
+                    MediaStore.Audio.Media.DURATION,
+                    MediaStore.Audio.Media.MIME_TYPE,
+                    MediaStore.Audio.Media.SIZE,
+                )
+            context.contentResolver.query(uri, projection, null, null, null)?.use { c ->
+                if (!c.moveToFirst()) return@use null
+                val id = c.getLong(0)
+                val m = RecordingsDatabase.get(context).metadata(id)
+                Recording.fromMediaStore(
+                        ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id),
+                        c.getString(1),
+                        c.getLong(2),
+                        c.getLong(3),
+                        id,
+                        c.getString(4) ?: "",
+                        c.getLong(5),
+                    )
+                    .copy(favourite = m.favourite, labels = m.labels, locationName = m.locationName)
+            }
+        }
+
+    suspend fun setFavourite(context: Context, id: Long, favourite: Boolean) =
+        withContext(Dispatchers.IO) {
+            RecordingsDatabase.get(context).let {
+                it.upsert(it.metadata(id).copy(favourite = favourite))
+            }
+        }
 
     private fun sync(db: RecordingsDatabase, list: List<Recording>) {
         db.retainOnly(list.map { it.id }.toSet())
