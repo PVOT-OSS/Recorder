@@ -26,8 +26,6 @@ import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import java.text.SimpleDateFormat
-import java.util.Locale
 import org.prauga.recorder.R
 import org.prauga.recorder.models.Recording
 import org.prauga.recorder.viewmodels.RecordingsViewModel
@@ -137,11 +135,12 @@ class RecordingsAdapter(
             val context = itemView.context
             dateTextView.text =
                 listOfNotNull(
-                        String.format(
-                            Locale.getDefault(),
-                            SUMMARY_FORMAT,
-                            dateFormatter.format(recording.dateAdded),
-                            timeFormatter.format(recording.dateAdded),
+                        DateUtils.formatDateTime(
+                            context,
+                            recording.dateAdded.time,
+                            DateUtils.FORMAT_SHOW_DATE or
+                                DateUtils.FORMAT_SHOW_TIME or
+                                DateUtils.FORMAT_ABBREV_MONTH,
                         ),
                         DateUtils.formatElapsedTime(recording.duration / 1000),
                         Formatter.formatShortFileSize(context, recording.size),
@@ -223,10 +222,5 @@ class RecordingsAdapter(
                 override fun areContentsTheSame(oldItem: Recording, newItem: Recording) =
                     oldItem == newItem
             }
-
-        private const val SUMMARY_FORMAT = "%s - %s"
-
-        private val dateFormatter = SimpleDateFormat.getDateInstance()
-        private val timeFormatter = SimpleDateFormat.getTimeInstance()
     }
 }
