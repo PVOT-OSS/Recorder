@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     SPDX-FileCopyrightText: The LineageOS Project
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
      SPDX-License-Identifier: Apache-2.0
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -8,16 +8,17 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-  <path
-      android:pathData="M34,43L34,43A2,2 0,0 1,36 45L36,63A2,2 0,0 1,34 65L34,65A2,2 0,0 1,32 63L32,45A2,2 0,0 1,34 43z"
-      android:fillColor="#ffffffff"/>
-  <path
-      android:pathData="M42,48L42,48A2,2 0,0 1,44 50L44,58A2,2 0,0 1,42 60L42,60A2,2 0,0 1,40 58L40,50A2,2 0,0 1,42 48z"
-      android:fillColor="#ffffffff"/>
-  <path
-      android:pathData="M49,53L51,53A1,1 0,0 1,52 54L52,54A1,1 0,0 1,51 55L49,55A1,1 0,0 1,48 54L48,54A1,1 0,0 1,49 53z"
-      android:fillColor="#ffffffff"/>
-  <path
-      android:pathData="M68,54m-10,0a10,10 0,1 1,20 0a10,10 0,1 1,-20 0"
-      android:fillColor="#ffffffff"/>
+    <group
+        android:scaleX="0.72"
+        android:scaleY="0.72"
+        android:translateX="18"
+        android:translateY="18">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M38.625,39.4375A11.375,11.375 0 0 1 50,28.0625A11.375,11.375 0 0 1 61.375,39.4375L61.375,55.6875A11.375,11.375 0 0 1 50,67.0625A11.375,11.375 0 0 1 38.625,55.6875ZM53.51,37.8125L59.75,37.8125A1.625,1.625 0 0 1 59.75,41.0625L53.51,41.0625A1.625,1.625 0 0 1 53.51,37.8125ZM53.51,45.9375L59.75,45.9375A1.625,1.625 0 0 1 59.75,49.1875L53.51,49.1875A1.625,1.625 0 0 1 53.51,45.9375ZM53.51,54.0625L59.75,54.0625A1.625,1.625 0 0 1 59.75,57.3125L53.51,57.3125A1.625,1.625 0 0 1 53.51,54.0625Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M33.75,55.6875A16.25,16.25 0 0 0 50,71.9375A16.25,16.25 0 0 0 66.25,55.6875A1.625,1.625 0 0 0 63,55.6875A13,13 0 0 1 50,68.6875A13,13 0 0 1 37,55.6875A1.625,1.625 0 0 0 33.75,55.6875Z" />
+    </group>
 </vector>
