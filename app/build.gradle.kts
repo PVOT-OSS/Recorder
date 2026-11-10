@@ -57,6 +57,12 @@ android {
         resValues = true
     }
 
+    // F-Droid rejects the encrypted dependency metadata AGP signs into APKs and bundles
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     lint {
         // Locales come from LineageOS' translation import and are often partial; missing
         // strings fall back to English, so report them without failing the build
