@@ -1,0 +1,34 @@
+Recorder captures meetings, lectures, interviews and ideas, and turns them into text you can search, without anything leaving your phone.
+
+Record
+• Standard (AAC), high quality (AAC) or lossless (WAV) audio, in mono or stereo
+• Pick the microphone: phone, wired headset or USB
+• Clear voice reduces background noise and levels the volume
+• Pause and resume, also from the notification; recording pauses itself during calls
+• Start from the Quick Settings tile, the home screen widget or a shortcut
+• If the app is ever stopped mid-recording, the audio is recovered the next time you open it
+
+Transcribe, on your phone
+• Live transcript while you record, saved with the recording
+• Download a speech model for your language (English, German, French, Spanish, Italian, Portuguese, Russian, Hindi, Chinese, Japanese and more); it runs offline
+• Speaker labels tell voices apart, and you can name them
+• Sound labels mark music, applause, laughter and more on the waveform
+• Edit the text, and share it as text or subtitles (SRT, WebVTT)
+
+Find and play
+• Search every word, title, place and label across all your recordings
+• Playback from 0.5× to 3×, skip silence, and jump back 5 or forward 10 seconds
+• The transcript follows along: tap any line to jump to it
+• Keywords and key moments help you skim long recordings
+• Favourites, labels and an optional place for each recording
+
+Edit and share
+• Trim a recording or cut out a part, saved as a copy so the original stays
+• Turn a moment into a video clip with the waveform and captions
+• Share recordings with any app, or import audio files
+• Deleted recordings stay in the trash for 30 days
+
+Private and open
+• No ads, no accounts, no tracking, nothing uploaded
+• The internet is used only to download the speech models you choose, on Wi-Fi by default
+• Free and open source under the Apache-2.0 licence, based on the LineageOS Recorder: github.com/PVOT-OSS/Recorder
