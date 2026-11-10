@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # Privacy Policy — Recorder
 
-_Effective 4 November 2026_
+_Effective 10 November 2026_
 
 Recorder (package `org.prauga.recorder`) is a sound recorder based on the LineageOS Recorder,
 published by Saalim Quadri for PVOT-OSS. This policy explains what the app does with your data.
@@ -79,9 +79,10 @@ the coordinates instead.
 
 - `RECORD_AUDIO`, to record.
 - `POST_NOTIFICATIONS`, to show the recording, playback, transcription and download notifications.
-- `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MICROPHONE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and
-  `FOREGROUND_SERVICE_DATA_SYNC`, to keep recording, playing back and transcribing when the app is
-  in the background.
+- `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MICROPHONE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK`,
+  `FOREGROUND_SERVICE_MEDIA_PROCESSING` and `FOREGROUND_SERVICE_DATA_SYNC`, to keep recording,
+  playing back and transcribing when the app is in the background (transcription uses media
+  processing on Android 15 and later, data sync before that).
 - `WAKE_LOCK`, inherited from the LineageOS Recorder; this version doesn't use it.
 - `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION`, only if you turn on location tagging.
 - `INTERNET`, only to download the models above.

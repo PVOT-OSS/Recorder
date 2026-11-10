@@ -13,6 +13,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
@@ -48,7 +49,10 @@ class TranscriptionService : LifecycleService() {
             this,
             NOTIFICATION_ID,
             notification(null, 0f),
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+            // On-device processing of a recording: mediaProcessing where it exists (Android 15+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM)
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
+            else ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         )
         lifecycleScope.launch {
             for ((uri, force) in queue) {
