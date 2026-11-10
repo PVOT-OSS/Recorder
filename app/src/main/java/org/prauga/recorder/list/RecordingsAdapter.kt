@@ -133,7 +133,7 @@ class RecordingsAdapter(
             this.recording = recording
             this.isSelected = isSelected
 
-            titleTextView.text = recording.title
+            titleTextView.text = recording.title.substringBeforeLast('.')
             val context = itemView.context
             dateTextView.text =
                 listOfNotNull(

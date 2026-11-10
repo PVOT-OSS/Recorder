@@ -139,7 +139,8 @@ class TrashActivity : AppCompatActivity(R.layout.activity_list) {
 
         inner class Holder(view: View) : RecyclerView.ViewHolder(view) {
             fun bind(recording: Recording) {
-                itemView.findViewById<TextView>(R.id.titleTextView).text = recording.title
+                itemView.findViewById<TextView>(R.id.titleTextView).text =
+                    recording.title.substringBeforeLast('.')
                 itemView.findViewById<TextView>(R.id.dateTextView).text =
                     listOf(
                             DateFormat.getDateInstance().format(recording.dateAdded),
