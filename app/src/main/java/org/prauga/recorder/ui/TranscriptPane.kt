@@ -134,9 +134,12 @@ class TranscriptPane(private val activity: PlayerActivity, container: ViewGroup)
                         speakers = names
                         showKeywords()
                         current = -1
+                        currentWord = -1
                         search(query)
                         adapter.notifyDataSetChanged()
                         updateEmpty(fraction)
+                        // Paused playback sends no position ticks, so take the current one now
+                        onPosition(activity.waveformView.positionMs)
                         activity.invalidateOptionsMenu()
                     }
             }
