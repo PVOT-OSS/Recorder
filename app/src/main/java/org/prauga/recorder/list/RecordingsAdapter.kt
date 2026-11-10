@@ -44,9 +44,6 @@ class RecordingsAdapter(
 
     var selectionTracker: SelectionTracker<Recording>? = null
 
-    /** The current search, to highlight in snippets. */
-    var query = ""
-
     val itemKeyProvider =
         object : ItemKeyProvider<Recording>(SCOPE_CACHED) {
             override fun getKey(position: Int) = getItem(position)
@@ -147,7 +144,7 @@ class RecordingsAdapter(
             snippetTextView.text =
                 recording.snippet?.let { snippet ->
                     SpannableString(snippet).apply {
-                        val term = query.trim().split(Regex("\\s+")).first()
+                        val term = recording.snippetTerm.orEmpty()
                         val at = snippet.indexOf(term, ignoreCase = true)
                         if (term.isNotEmpty() && at >= 0) {
                             setSpan(

@@ -24,6 +24,8 @@ data class Recording(
     val locationName: String? = null,
     /** While searching: the transcript excerpt that matched. */
     val snippet: String? = null,
+    /** The term to highlight in [snippet]; part of equality so a new search re-binds the row. */
+    val snippetTerm: String? = null,
 ) : Parcelable {
     constructor(
         parcel: Parcel
@@ -37,6 +39,7 @@ data class Recording(
         parcel.readLong(),
         parcel.readInt() != 0,
         parcel.createStringArrayList()!!,
+        parcel.readString(),
         parcel.readString(),
         parcel.readString(),
     )
@@ -53,6 +56,7 @@ data class Recording(
         parcel.writeStringList(labels)
         parcel.writeString(locationName)
         parcel.writeString(snippet)
+        parcel.writeString(snippetTerm)
     }
 
     override fun describeContents() = 0

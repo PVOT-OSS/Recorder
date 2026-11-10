@@ -75,7 +75,11 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
                     }
                     .map { recording ->
                         if (matches == null || term.isEmpty()) recording
-                        else recording.copy(snippet = db.snippet(recording.id, term))
+                        else
+                            recording.copy(
+                                snippet = db.snippet(recording.id, term),
+                                snippetTerm = term,
+                            )
                     }
             }
             .flowOn(Dispatchers.IO)
