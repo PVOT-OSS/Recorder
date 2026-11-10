@@ -19,7 +19,9 @@ object Keywords {
                 "themselves then there these they this those through to too um uh under until up " +
                 "very was we well were what when where which while who whom why will with would " +
                 "yeah yes you your yours yourself yourselves okay ok one two three four five six " +
-                "seven eight nine ten zero thing things going want think say said see")
+                "seven eight nine ten zero thing things going want think say said see " +
+                "that's it's i'm don't you're won't can't there's he's she's we're they're " +
+                "i'll you'll we'll i've you've didn't doesn't isn't wasn't what's let's")
             .split(' ')
             .toSet()
 
