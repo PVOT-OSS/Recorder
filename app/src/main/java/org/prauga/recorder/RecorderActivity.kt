@@ -328,6 +328,7 @@ class RecorderActivity : AppCompatActivity() {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { model.labels.collectLatest { updateFilterChips(it) } }
                 model.recordings.collectLatest {
+                    recordingsAdapter.query = model.query.value
                     recordingsAdapter.submitList(it)
 
                     listLoadingProgressBar.isVisible = false

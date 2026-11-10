@@ -260,6 +260,30 @@ class RecordingsDatabase private constructor(context: Context) :
             .use { c -> buildSet { while (c.moveToNext()) add(c.getLong(0)) } }
     }
 
+    /** The first transcript line of [id] containing [term], cut down to the words around it. */
+    fun snippet(id: Long, term: String): String? {
+        val text =
+            readableDatabase
+                .rawQuery(
+                    "SELECT text FROM segments WHERE recording_id = ? AND text LIKE ? " +
+                        "ORDER BY start_ms LIMIT 1",
+                    arrayOf(id.toString(), "%$term%"),
+                )
+                .use { c -> if (c.moveToFirst()) c.getString(0) else null } ?: return null
+        val at = text.indexOf(term, ignoreCase = true).coerceAtLeast(0)
+        val from =
+            text.lastIndexOf(' ', (at - SNIPPET_CONTEXT).coerceAtLeast(0)).let {
+                if (at - SNIPPET_CONTEXT <= 0 || it < 0) 0 else it + 1
+            }
+        val to =
+            text.indexOf(' ', (at + term.length + SNIPPET_CONTEXT).coerceAtMost(text.length)).let {
+                if (it < 0) text.length else it
+            }
+        return (if (from > 0) "…" else "") +
+            text.substring(from, to) +
+            (if (to < text.length) "…" else "")
+    }
+
     /** Drops rows whose MediaStore entry is gone. */
     fun retainOnly(ids: Set<Long>) {
         val known = metadata().keys + indexedIds()
@@ -311,6 +335,7 @@ class RecordingsDatabase private constructor(context: Context) :
         private const val NAME = "recordings.db"
         private const val VERSION = 1
         private const val LABEL_SEPARATOR = "\u001f"
+        private const val SNIPPET_CONTEXT = 40
 
         @Volatile private var instance: RecordingsDatabase? = null
 

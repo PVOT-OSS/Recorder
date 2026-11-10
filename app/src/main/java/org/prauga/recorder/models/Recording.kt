@@ -22,6 +22,8 @@ data class Recording(
     val favourite: Boolean = false,
     val labels: List<String> = emptyList(),
     val locationName: String? = null,
+    /** While searching: the transcript excerpt that matched. */
+    val snippet: String? = null,
 ) : Parcelable {
     constructor(
         parcel: Parcel
@@ -36,6 +38,7 @@ data class Recording(
         parcel.readInt() != 0,
         parcel.createStringArrayList()!!,
         parcel.readString(),
+        parcel.readString(),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -49,6 +52,7 @@ data class Recording(
         parcel.writeInt(if (favourite) 1 else 0)
         parcel.writeStringList(labels)
         parcel.writeString(locationName)
+        parcel.writeString(snippet)
     }
 
     override fun describeContents() = 0

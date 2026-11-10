@@ -60,16 +60,23 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
                         .trim()
                         .takeIf { it.isNotEmpty() }
                         ?.let { RecordingsDatabase.get(applicationContext).search(it) }
-                list.filter { recording ->
-                    (matches == null ||
-                        recording.id in matches ||
-                        recording.title.contains(query.trim(), ignoreCase = true)) &&
-                        when (filter) {
-                            Filter.All -> true
-                            Filter.Favourites -> recording.favourite
-                            is Filter.Label -> filter.name in recording.labels
-                        }
-                }
+                val term = query.trim().split(Regex("\\s+")).firstOrNull().orEmpty()
+                val db = RecordingsDatabase.get(applicationContext)
+                list
+                    .filter { recording ->
+                        (matches == null ||
+                            recording.id in matches ||
+                            recording.title.contains(query.trim(), ignoreCase = true)) &&
+                            when (filter) {
+                                Filter.All -> true
+                                Filter.Favourites -> recording.favourite
+                                is Filter.Label -> filter.name in recording.labels
+                            }
+                    }
+                    .map { recording ->
+                        if (matches == null || term.isEmpty()) recording
+                        else recording.copy(snippet = db.snippet(recording.id, term))
+                    }
             }
             .flowOn(Dispatchers.IO)
             .stateIn(

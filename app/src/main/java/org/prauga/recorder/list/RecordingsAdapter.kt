@@ -5,8 +5,12 @@
 
 package org.prauga.recorder.list
 
+import android.graphics.Typeface
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.format.DateUtils
 import android.text.format.Formatter
+import android.text.style.StyleSpan
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -18,6 +22,7 @@ import android.widget.TextView
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.recyclerview.selection.ItemDetailsLookup
@@ -38,6 +43,9 @@ class RecordingsAdapter(
     private var recordingToIndex: Map<Recording, Int>? = null
 
     var selectionTracker: SelectionTracker<Recording>? = null
+
+    /** The current search, to highlight in snippets. */
+    var query = ""
 
     val itemKeyProvider =
         object : ItemKeyProvider<Recording>(SCOPE_CACHED) {
@@ -91,6 +99,9 @@ class RecordingsAdapter(
         }
         private val playImageView by lazy { itemView.findViewById<ImageView>(R.id.playImageView) }
         private val titleTextView by lazy { itemView.findViewById<TextView>(R.id.titleTextView) }
+        private val snippetTextView by lazy {
+            itemView.findViewById<TextView>(R.id.snippetTextView)
+        }
 
         private lateinit var recording: Recording
 
@@ -132,6 +143,22 @@ class RecordingsAdapter(
             this.isSelected = isSelected
 
             titleTextView.text = recording.title.substringBeforeLast('.')
+            snippetTextView.isVisible = recording.snippet != null
+            snippetTextView.text =
+                recording.snippet?.let { snippet ->
+                    SpannableString(snippet).apply {
+                        val term = query.trim().split(Regex("\\s+")).first()
+                        val at = snippet.indexOf(term, ignoreCase = true)
+                        if (term.isNotEmpty() && at >= 0) {
+                            setSpan(
+                                StyleSpan(Typeface.BOLD),
+                                at,
+                                at + term.length,
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                            )
+                        }
+                    }
+                }
             val context = itemView.context
             dateTextView.text =
                 listOfNotNull(
