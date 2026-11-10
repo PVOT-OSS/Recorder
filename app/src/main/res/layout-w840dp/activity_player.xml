@@ -39,6 +39,14 @@
             android:paddingHorizontal="16dp">
 
             <TextView
+                android:id="@+id/playerTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:accessibilityHeading="true"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                tools:text="The Fox and the Grapes" />
+
+            <TextView
                 android:id="@+id/subtitleTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

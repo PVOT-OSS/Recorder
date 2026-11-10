@@ -190,8 +190,10 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
 
     private fun bind(recording: Recording) {
         this.recording = recording
+        // The full title lives in the content; the toolbar is too narrow next to its actions
         title = recording.title.substringBeforeLast('.')
-        supportActionBar?.title = title
+        supportActionBar?.title = null
+        findViewById<TextView>(R.id.playerTitleTextView).text = title
         val date =
             DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
                 .format(recording.dateAdded)
