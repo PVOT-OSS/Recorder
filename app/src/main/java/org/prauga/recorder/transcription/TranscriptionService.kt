@@ -16,7 +16,6 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -45,8 +44,9 @@ class TranscriptionService : LifecycleService() {
                 )
             )
         }
-        ServiceCompat.startForeground(
-            this,
+        // Platform call on purpose: ServiceCompat drops types newer than the core library knows,
+        // which turns mediaProcessing into "none" and crashes the service
+        startForeground(
             NOTIFICATION_ID,
             notification(null, 0f),
             // On-device processing of a recording: mediaProcessing where it exists (Android 15+)
