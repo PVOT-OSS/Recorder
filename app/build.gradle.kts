@@ -10,9 +10,11 @@ plugins {
     id("kotlin-android")
 }
 
-val versionMajor = 1
-val versionMinor = 1
-val versionPatch = 0
+val versionMajor = rootProject.extra["versionMajor"] as Int
+val versionMinor = rootProject.extra["versionMinor"] as Int
+val versionPatch = rootProject.extra["versionPatch"] as Int
+val computedVersionCode = rootProject.extra["computedVersionCode"] as Int
+val computedVersionName = rootProject.extra["computedVersionName"] as String
 
 android {
     compileSdk = 36
@@ -22,8 +24,12 @@ android {
         applicationId = "org.prauga.recorder"
         minSdk = 31
         targetSdk = 36
-        versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
-        versionName = "$versionMajor.$versionMinor.$versionPatch"
+        versionCode = computedVersionCode
+        versionName = computedVersionName
+
+        buildConfigField("int", "VERSION_MAJOR", "$versionMajor")
+        buildConfigField("int", "VERSION_MINOR", "$versionMinor")
+        buildConfigField("int", "VERSION_PATCH", "$versionPatch")
     }
 
     buildTypes {
@@ -46,7 +52,10 @@ android {
         }
     }
 
-    buildFeatures { resValues = true }
+    buildFeatures {
+        buildConfig = true
+        resValues = true
+    }
 
     lint {
         // Locales come from LineageOS' translation import and are often partial; missing
