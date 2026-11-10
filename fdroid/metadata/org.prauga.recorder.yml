@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: Saalim Quadri <danascape@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+PackageName: org.prauga.recorder
+Name: Recorder
+Summary: Record, transcribe and search your audio, all offline on your phone
+License: Apache-2.0
+AuthorName: Saalim Quadri
+SourceCode: https://github.com/PVOT-OSS/Recorder
+IssueTracker: https://github.com/PVOT-OSS/Recorder/issues
+WebSite: ""
+Categories:
+  - Multimedia
+CurrentVersion: "1.1.0"
+CurrentVersionCode: 10100
+Description: |
+  Recorder captures meetings, lectures, interviews and ideas, and turns
+  them into text you can search, without anything leaving your phone.
+  It records in AAC or lossless WAV, transcribes live and afterwards with
+  speech models you download for your language, labels speakers and sounds
+  like music or applause, and lets you search every word you recorded.
+  Play back at any speed with skip silence, trim recordings into copies,
+  and share audio, transcripts, subtitles or video clips. Based on the
+  LineageOS Recorder.
+
+RepoType: git
+Repo: https://github.com/PVOT-OSS/Recorder.git
+
+Builds:
+  - versionName: 1.1.0
+    versionCode: 10100
+    commit: v1.1.0
+    subdir: app
+    gradle:
+      - yes
