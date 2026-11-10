@@ -83,7 +83,8 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
         object : Runnable {
             override fun run() {
                 updatePosition()
-                handler.postDelayed(this, TICK_MS)
+                // Only poll while playing; seeks and state changes update the position themselves
+                if (controller?.isPlaying == true) handler.postDelayed(this, TICK_MS)
             }
         }
 
@@ -91,6 +92,16 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
         object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 updatePlayPause()
+                handler.removeCallbacks(ticker)
+                handler.post(ticker)
+            }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int,
+            ) {
+                updatePosition()
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -294,7 +305,10 @@ class PlayerActivity : AppCompatActivity(R.layout.activity_player) {
     override fun onStart() {
         super.onStart()
         updateSpeed()
-        if (controller != null) handler.post(ticker)
+        if (controller != null) {
+            handler.removeCallbacks(ticker)
+            handler.post(ticker)
+        }
     }
 
     override fun onStop() {
