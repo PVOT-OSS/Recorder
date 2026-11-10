@@ -3,8 +3,8 @@
 
 version = 1
 SPDX-PackageName = "Recorder"
-SPDX-PackageSupplier = "The LineageOS Project"
-SPDX-PackageDownloadLocation = "https://github.com/LineageOS/android_packages_apps_Recorder"
+SPDX-PackageSupplier = "Saalim Quadri <danascape@gmail.com>"
+SPDX-PackageDownloadLocation = "https://github.com/PVOT-OSS/Recorder"
 
 [[annotations]]
 path = [".github/workflows/**", ".gitattributes", ".gitignore"]
