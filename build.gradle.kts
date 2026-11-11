@@ -12,7 +12,7 @@ plugins {
 ext {
     val versionMajor = 1
     val versionMinor = 1
-    val versionPatch = 0
+    val versionPatch = 1
 
     set("versionMajor", versionMajor)
     set("versionMinor", versionMinor)
